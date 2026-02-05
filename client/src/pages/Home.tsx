@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
+import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight, ChevronLeft, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
 import type { StudentResponse, CacheStatus, Student, TermData } from "@shared/schema";
 import { Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -339,6 +339,172 @@ function TermProgress({ terms }: { terms: TermData[] }) {
             </div>
           );
         })}
+      </CardContent>
+    </Card>
+  );
+}
+
+function AttendanceCalendar({ attendance }: { attendance: Record<string, string> }) {
+  const [currentDate, setCurrentDate] = useState(() => {
+    const dates = Object.keys(attendance).map(dateStr => {
+      const [m, d, y] = dateStr.split("/").map(Number);
+      return new Date(y, m - 1, d);
+    }).filter(d => !isNaN(d.getTime()));
+    
+    if (dates.length > 0) {
+      dates.sort((a, b) => b.getTime() - a.getTime());
+      return new Date(dates[0].getFullYear(), dates[0].getMonth(), 1);
+    }
+    return new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  });
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  const goToPrevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  };
+
+  const goToNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  };
+
+  const getDaysInMonth = (year: number, month: number) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (year: number, month: number) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const getAttendanceForDate = (day: number) => {
+    const month = currentDate.getMonth() + 1;
+    const year = currentDate.getFullYear();
+    const dateKey = `${month}/${day}/${year}`;
+    return attendance[dateKey]?.toUpperCase() || null;
+  };
+
+  const getStatusBadge = (status: string | null) => {
+    if (!status) return null;
+    switch (status) {
+      case "P":
+        return <Badge className="bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/30 text-[10px] font-bold px-1.5 py-0">P</Badge>;
+      case "L":
+        return <Badge className="bg-yellow-400/20 text-yellow-700 dark:text-yellow-300 border-yellow-400/30 text-[10px] font-bold px-1.5 py-0">L</Badge>;
+      case "A":
+        return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-[10px] font-bold px-1.5 py-0">A</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  const getDayBgClass = (status: string | null) => {
+    if (!status) return "bg-background";
+    switch (status) {
+      case "P":
+        return "bg-violet-500/10 border-violet-500/30";
+      case "L":
+        return "bg-yellow-400/10 border-yellow-400/30";
+      case "A":
+        return "bg-rose-500/10 border-rose-500/30";
+      default:
+        return "bg-background";
+    }
+  };
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const daysInMonth = getDaysInMonth(year, month);
+  const firstDay = getFirstDayOfMonth(year, month);
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+  const calendarDays = [];
+  for (let i = 0; i < firstDay; i++) {
+    calendarDays.push(null);
+  }
+  for (let day = 1; day <= daysInMonth; day++) {
+    calendarDays.push(day);
+  }
+
+  const monthStats = useMemo(() => {
+    let present = 0, leave = 0, absent = 0;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const status = getAttendanceForDate(day);
+      if (status === "P") present++;
+      else if (status === "L") leave++;
+      else if (status === "A") absent++;
+    }
+    return { present, leave, absent, total: present + leave + absent };
+  }, [currentDate, attendance]);
+
+  return (
+    <Card className="overflow-hidden" data-testid="card-attendance-calendar">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 pb-4">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <CalendarDays className="w-5 h-5 text-primary" />
+            </div>
+            <span>Attendance Calendar</span>
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" onClick={goToPrevMonth} data-testid="button-prev-month">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="font-semibold min-w-[140px] text-center">
+              {monthNames[month]} {year}
+            </span>
+            <Button variant="outline" size="icon" onClick={goToNextMonth} data-testid="button-next-month">
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 mt-3 text-sm">
+          <span className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-violet-500"></div>
+            <span className="text-muted-foreground">Present: <span className="font-semibold text-foreground">{monthStats.present}</span></span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+            <span className="text-muted-foreground">Leave: <span className="font-semibold text-foreground">{monthStats.leave}</span></span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-rose-500"></div>
+            <span className="text-muted-foreground">Absent: <span className="font-semibold text-foreground">{monthStats.absent}</span></span>
+          </span>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {dayNames.map(day => (
+            <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-2">
+              {day}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {calendarDays.map((day, index) => {
+            if (day === null) {
+              return <div key={`empty-${index}`} className="aspect-square" />;
+            }
+            const status = getAttendanceForDate(day);
+            const isToday = isCurrentMonth && day === today.getDate();
+            
+            return (
+              <div
+                key={day}
+                className={`aspect-square flex flex-col items-center justify-center rounded-lg border transition-colors ${getDayBgClass(status)} ${isToday ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                data-testid={`calendar-day-${day}`}
+              >
+                <span className={`text-xs font-medium ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                  {day}
+                </span>
+                {getStatusBadge(status)}
+              </div>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
@@ -983,6 +1149,7 @@ export default function Home() {
               {studentData.student.terms && studentData.student.terms.length > 0 && (
                 <>
                   <TermProgress terms={studentData.student.terms} />
+                  <AttendanceCalendar attendance={studentData.student.attendance} />
                   <TermwiseAttendanceHistory terms={studentData.student.terms} />
                 </>
               )}
