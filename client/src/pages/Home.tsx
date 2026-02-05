@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -345,6 +345,8 @@ function TermProgress({ terms }: { terms: TermData[] }) {
 }
 
 function AttendanceCalendar({ attendance }: { attendance: Record<string, string> }) {
+  const [isOpen, setIsOpen] = useState(false);
+  
   const getLatestMonth = useCallback(() => {
     const dates = Object.keys(attendance).map(dateStr => {
       const [m, d, y] = dateStr.split("/").map(Number);
@@ -446,72 +448,84 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
 
   return (
     <Card className="overflow-hidden" data-testid="card-attendance-calendar">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 pb-4">
-        <div className="flex items-center justify-between">
+      <CardHeader 
+        className="bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 cursor-pointer hover-elevate"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
               <CalendarDays className="w-5 h-5 text-primary" />
             </div>
             <span>Attendance Calendar</span>
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={goToPrevMonth} data-testid="button-prev-month" aria-label="Previous month">
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="font-semibold min-w-[140px] text-center">
-              {monthNames[month]} {year}
-            </span>
-            <Button variant="outline" size="icon" onClick={goToNextMonth} data-testid="button-next-month" aria-label="Next month">
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 mt-3 text-sm">
-          <span className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-violet-500"></div>
-            <span className="text-muted-foreground">Present: <span className="font-semibold text-foreground">{monthStats.present}</span></span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-            <span className="text-muted-foreground">Leave: <span className="font-semibold text-foreground">{monthStats.leave}</span></span>
-          </span>
-          <span className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-rose-500"></div>
-            <span className="text-muted-foreground">Absent: <span className="font-semibold text-foreground">{monthStats.absent}</span></span>
-          </span>
+          <Button variant="ghost" size="icon" data-testid="button-toggle-calendar" aria-label={isOpen ? "Close calendar" : "Open calendar"}>
+            {isOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-4">
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {dayNames.map(day => (
-            <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-2">
-              {day}
+      
+      {isOpen && (
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={(e) => { e.stopPropagation(); goToPrevMonth(); }} data-testid="button-prev-month" aria-label="Previous month">
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <span className="font-semibold min-w-[130px] text-center text-sm sm:text-base">
+                {monthNames[month]} {year}
+              </span>
+              <Button variant="outline" size="icon" onClick={(e) => { e.stopPropagation(); goToNextMonth(); }} data-testid="button-next-month" aria-label="Next month">
+                <ChevronRight className="w-4 h-4" />
+              </Button>
             </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {calendarDays.map((day, index) => {
-            if (day === null) {
-              return <div key={`empty-${index}`} className="aspect-square" />;
-            }
-            const status = getAttendanceForDate(day);
-            const isToday = isCurrentMonth && day === today.getDate();
-            
-            return (
-              <div
-                key={day}
-                className={`aspect-square flex flex-col items-center justify-center rounded-lg border transition-colors ${getDayBgClass(status)} ${isToday ? 'ring-2 ring-primary ring-offset-1' : ''}`}
-                data-testid={`calendar-day-${day}`}
-              >
-                <span className={`text-xs font-medium ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
-                  {day}
-                </span>
-                {getStatusBadge(status)}
+            <div className="flex items-center gap-3 text-xs sm:text-sm flex-wrap justify-center">
+              <span className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-violet-500"></div>
+                <span className="text-muted-foreground">P: <span className="font-semibold text-foreground">{monthStats.present}</span></span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-400"></div>
+                <span className="text-muted-foreground">L: <span className="font-semibold text-foreground">{monthStats.leave}</span></span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500"></div>
+                <span className="text-muted-foreground">A: <span className="font-semibold text-foreground">{monthStats.absent}</span></span>
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {dayNames.map(day => (
+              <div key={day} className="text-center text-[10px] sm:text-xs font-semibold text-muted-foreground py-1 sm:py-2">
+                {day}
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+            {calendarDays.map((day, index) => {
+              if (day === null) {
+                return <div key={`empty-${index}`} className="aspect-square" />;
+              }
+              const status = getAttendanceForDate(day);
+              const isToday = isCurrentMonth && day === today.getDate();
+              
+              return (
+                <div
+                  key={day}
+                  className={`aspect-square flex flex-col items-center justify-center rounded-md sm:rounded-lg border transition-colors ${getDayBgClass(status)} ${isToday ? 'ring-2 ring-primary ring-offset-1' : ''}`}
+                  data-testid={`calendar-day-${day}`}
+                >
+                  <span className={`text-[10px] sm:text-xs font-medium ${isToday ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                    {day}
+                  </span>
+                  {getStatusBadge(status)}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      )}
     </Card>
   );
 }
