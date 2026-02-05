@@ -529,6 +529,7 @@ class AttendanceCache {
       }
 
       const studentTerms: TermData[] = [];
+      const today = new Date();
       
       for (const term of terms) {
         const percentage = typeof row[term.percentageCol] === 'number' ? row[term.percentageCol] : 0;
@@ -544,13 +545,25 @@ class AttendanceCache {
           }
         }
 
+        let termEnded = false;
+        if (term.dateColumns.length > 0) {
+          const lastDateStr = term.dateColumns[term.dateColumns.length - 1].date;
+          const parts = lastDateStr.split('/');
+          if (parts.length === 3) {
+            const lastDate = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
+            termEnded = today > lastDate;
+          }
+        }
+
         let status: "Cleared" | "Not Cleared" | "In Progress";
         if (criteriaValue.includes('cleared') && !criteriaValue.includes('not')) {
           status = "Cleared";
-        } else if (criteriaValue.includes('not') || criteriaValue.includes('pending')) {
-          status = attended < total ? "In Progress" : "Not Cleared";
+        } else if (attended >= REQUIRED_CLASSES) {
+          status = "Cleared";
+        } else if (termEnded) {
+          status = "Not Cleared";
         } else {
-          status = attended >= REQUIRED_CLASSES ? "Cleared" : (attended < total ? "In Progress" : "Not Cleared");
+          status = "In Progress";
         }
 
         const remaining = Math.max(0, REQUIRED_CLASSES - attended);
