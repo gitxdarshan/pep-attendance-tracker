@@ -1,0 +1,54 @@
+e-interaction-elevate):after{inset:-1px}}
+root@Vrsgram:~/pep-attendance-tracker# cd ~/pep-attendance-tracker
+git pull
+npm run build
+pm2 restart pep-tracker
+remote: Enumerating objects: 7, done.
+remote: Counting objects: 100% (7/7), done.
+remote: Compressing objects: 100% (7/7), done.
+remote: Total 7 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+Unpacking objects: 100% (7/7), 2.30 KiB | 1.15 MiB/s, done.
+From https://github.com/gitxdarshan/pep-attendance-tracker
+   970eeda..1a428fa  main       -> origin/main
+Updating 970eeda..1a428fa
+Fast-forward
+ postcss.config.js  |   6 ++++++
+ tailwind.config.ts | 107 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 113 insertions(+)
+ create mode 100644 postcss.config.js
+ create mode 100644 tailwind.config.ts
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.1 building client environment for production...
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1965 modules transformed.
+../dist/public/index.html                              3.02 kB │ gzip:   1.07 kB
+../dist/public/assets/index-Bd49Jx8D.css              82.68 kB │ gzip:  13.40 kB
+../dist/public/assets/purify.es-Bzr520pe.js           22.45 kB │ gzip:   8.63 kB
+../dist/public/assets/index.es-DC1_pyBO.js           158.58 kB │ gzip:  52.93 kB
+../dist/public/assets/html2canvas.esm-DXEQVQnt.js    201.04 kB │ gzip:  47.43 kB
+../dist/public/assets/index-D2J_ALWH.js            1,067.63 kB │ gzip: 343.93 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 10.23s
+building server...
+
+  dist/index.cjs  2.2mb ⚠️
+
+⚡ Done in 275ms
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [pep-tracker](ids: [ 0 ])
+[PM2] [pep-tracker](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ pep-tracker        │ fork     │ 1    │ online    │ 0%       │ 772.0kb  │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@Vrsgram:~/pep-attendance-tracker#
