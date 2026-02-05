@@ -345,7 +345,7 @@ function TermProgress({ terms }: { terms: TermData[] }) {
 }
 
 function AttendanceCalendar({ attendance }: { attendance: Record<string, string> }) {
-  const [currentDate, setCurrentDate] = useState(() => {
+  const getLatestMonth = useCallback(() => {
     const dates = Object.keys(attendance).map(dateStr => {
       const [m, d, y] = dateStr.split("/").map(Number);
       return new Date(y, m - 1, d);
@@ -356,7 +356,13 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
       return new Date(dates[0].getFullYear(), dates[0].getMonth(), 1);
     }
     return new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  });
+  }, [attendance]);
+
+  const [currentDate, setCurrentDate] = useState(getLatestMonth);
+
+  useEffect(() => {
+    setCurrentDate(getLatestMonth());
+  }, [attendance, getLatestMonth]);
 
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -449,13 +455,13 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
             <span>Attendance Calendar</span>
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={goToPrevMonth} data-testid="button-prev-month">
+            <Button variant="outline" size="icon" onClick={goToPrevMonth} data-testid="button-prev-month" aria-label="Previous month">
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <span className="font-semibold min-w-[140px] text-center">
               {monthNames[month]} {year}
             </span>
-            <Button variant="outline" size="icon" onClick={goToNextMonth} data-testid="button-next-month">
+            <Button variant="outline" size="icon" onClick={goToNextMonth} data-testid="button-next-month" aria-label="Next month">
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
