@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: pep-attendance-tracker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+    healthCheckPath: /api/status
+    autoDeploy: true
