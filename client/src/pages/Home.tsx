@@ -28,12 +28,61 @@ interface MonthlyData {
   notMarkedCount: number;
 }
 
-function AttendanceHistory({ attendance }: { attendance: Record<string, string> }) {
+function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
+  const [expandedTerms, setExpandedTerms] = useState<Set<string>>(new Set([terms[0]?.termName || ""]));
   const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-  const monthlyData = useMemo(() => {
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "P":
+        return <Badge className="bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/30 text-xs font-semibold">P</Badge>;
+      case "L":
+        return <Badge className="bg-yellow-400/20 text-yellow-700 dark:text-yellow-300 border-yellow-400/30 text-xs font-semibold">L</Badge>;
+      case "A":
+        return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-semibold">A</Badge>;
+      default:
+        return <Badge variant="outline" className="text-xs opacity-50">-</Badge>;
+    }
+  };
+
+  const getTermStatusBadge = (status: string) => {
+    switch (status) {
+      case "Cleared":
+        return <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-xs font-semibold">Cleared</Badge>;
+      case "Not Cleared":
+        return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-semibold">Not Cleared</Badge>;
+      default:
+        return <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs font-semibold">In Progress</Badge>;
+    }
+  };
+
+  const toggleTerm = (termName: string) => {
+    setExpandedTerms(prev => {
+      const next = new Set(prev);
+      if (next.has(termName)) {
+        next.delete(termName);
+      } else {
+        next.add(termName);
+      }
+      return next;
+    });
+  };
+
+  const toggleMonth = (key: string) => {
+    setExpandedMonths(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  };
+
+  const getMonthlyDataForTerm = (attendance: Record<string, string>) => {
     const months: Record<string, MonthlyData> = {};
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     Object.entries(attendance).forEach(([dateStr, status]) => {
       const parts = dateStr.split("/");
@@ -44,7 +93,6 @@ function AttendanceHistory({ attendance }: { attendance: Record<string, string> 
       const year = parseInt(parts[2], 10);
       
       if (isNaN(month) || isNaN(day) || isNaN(year)) return;
-      if (month < 1 || month > 12 || day < 1 || day > 31 || year < 2020) return;
 
       const monthKey = `${year}-${month.toString().padStart(2, "0")}`;
       
@@ -64,8 +112,7 @@ function AttendanceHistory({ attendance }: { attendance: Record<string, string> 
       if (upperStatus === "P") months[monthKey].presentCount++;
       else if (upperStatus === "L") months[monthKey].leaveCount++;
       else if (upperStatus === "A") months[monthKey].absentCount++;
-      else if (!upperStatus) months[monthKey].notMarkedCount++;
-      else months[monthKey].absentCount++;
+      else months[monthKey].notMarkedCount++;
 
       months[monthKey].days.push({
         date: dateStr,
@@ -79,70 +126,11 @@ function AttendanceHistory({ attendance }: { attendance: Record<string, string> 
     });
 
     return Object.entries(months)
-      .sort((a, b) => b[0].localeCompare(a[0]))
+      .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([key, value]) => ({ key, ...value }));
-  }, [attendance]);
-
-  const toggleMonth = (key: string) => {
-    setExpandedMonths(prev => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "P":
-        return <Badge className="bg-violet-500/20 text-violet-700 dark:text-violet-300 border-violet-500/30 text-xs font-semibold">P</Badge>;
-      case "L":
-        return <Badge className="bg-yellow-400/20 text-yellow-700 dark:text-yellow-300 border-yellow-400/30 text-xs font-semibold">L</Badge>;
-      case "A":
-        return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-semibold">A</Badge>;
-      default:
-        return <Badge variant="outline" className="text-xs opacity-50">-</Badge>;
-    }
-  };
-
-  if (monthlyData.length === 0) {
-    return null;
-  }
-
-  const totalPresent = monthlyData.reduce((sum, m) => sum + m.presentCount, 0);
-  const totalLeave = monthlyData.reduce((sum, m) => sum + m.leaveCount, 0);
-  const totalAbsent = monthlyData.reduce((sum, m) => sum + m.absentCount, 0);
-  const totalDays = totalPresent + totalLeave + totalAbsent;
-  const attendanceRate = totalDays > 0 ? Math.round((totalPresent / totalDays) * 100) : 0;
-
-  const lastMarkedDate = useMemo(() => {
-    let latestDate: Date | null = null;
-    let latestDateStr = "";
-    let latestStatus = "";
-
-    Object.entries(attendance).forEach(([dateStr, status]) => {
-      const upperStatus = status?.toUpperCase?.() || "";
-      if (upperStatus === "P" || upperStatus === "L" || upperStatus === "A") {
-        const parts = dateStr.split("/");
-        if (parts.length === 3) {
-          const month = parseInt(parts[0], 10);
-          const day = parseInt(parts[1], 10);
-          const year = parseInt(parts[2], 10);
-          const date = new Date(year, month - 1, day);
-          if (!latestDate || date > latestDate) {
-            latestDate = date;
-            latestDateStr = dateStr;
-            latestStatus = upperStatus;
-          }
-        }
-      }
-    });
-
-    return latestDateStr ? { date: latestDateStr, status: latestStatus } : null;
-  }, [attendance]);
+  if (!terms || terms.length === 0) return null;
 
   return (
     <Card className="overflow-hidden" data-testid="card-attendance-history">
@@ -151,95 +139,101 @@ function AttendanceHistory({ attendance }: { attendance: Record<string, string> 
           <div className="p-2 rounded-lg bg-primary/10">
             <History className="w-5 h-5 text-primary" />
           </div>
-          <span>Attendance History</span>
+          <span>Term-wise Attendance History</span>
         </CardTitle>
-        <CardDescription className="flex flex-col gap-1">
-          <span>Complete attendance records across all dates</span>
-          {lastMarkedDate && (
-            <span className="flex items-center gap-1.5 text-primary font-medium" data-testid="text-last-marked">
-              <CalendarDays className="w-3.5 h-3.5" />
-              Last marked: {lastMarkedDate.date} ({lastMarkedDate.status === "P" ? "Present" : lastMarkedDate.status === "L" ? "Leave" : "Absent"})
-            </span>
-          )}
+        <CardDescription>
+          Detailed attendance records for each term
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6 space-y-5">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500/10 to-violet-500/5 dark:from-violet-500/20 dark:to-violet-500/10 p-4 border border-violet-500/20">
-            <div className="absolute top-2 right-2 opacity-10">
-              <CheckCircle2 className="w-12 h-12 text-violet-500" />
-            </div>
-            <p className="text-3xl font-bold text-violet-600 dark:text-violet-400">{totalPresent}</p>
-            <p className="text-sm text-violet-700/70 dark:text-violet-300/70 font-medium">Present</p>
-          </div>
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-yellow-400/10 to-yellow-400/5 dark:from-yellow-400/20 dark:to-yellow-400/10 p-4 border border-yellow-400/20">
-            <div className="absolute top-2 right-2 opacity-10">
-              <Clock className="w-12 h-12 text-yellow-400" />
-            </div>
-            <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{totalLeave}</p>
-            <p className="text-sm text-yellow-700/70 dark:text-yellow-300/70 font-medium">Leave</p>
-          </div>
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-rose-500/10 to-rose-500/5 dark:from-rose-500/20 dark:to-rose-500/10 p-4 border border-rose-500/20">
-            <div className="absolute top-2 right-2 opacity-10">
-              <XCircle className="w-12 h-12 text-rose-500" />
-            </div>
-            <p className="text-3xl font-bold text-rose-600 dark:text-rose-400">{totalAbsent}</p>
-            <p className="text-sm text-rose-700/70 dark:text-rose-300/70 font-medium">Absent</p>
-          </div>
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 p-4 border border-primary/20">
-            <div className="absolute top-2 right-2 opacity-10">
-              <TrendingUp className="w-12 h-12 text-primary" />
-            </div>
-            <p className="text-3xl font-bold text-primary">{attendanceRate}%</p>
-            <p className="text-sm text-primary/70 font-medium">Rate</p>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {monthlyData.map(({ key, month, year, days, presentCount, leaveCount, absentCount }) => (
-            <div key={key} className="border rounded-xl overflow-hidden transition-all duration-200 hover:border-primary/30">
+      <CardContent className="p-6 space-y-4">
+        {terms.map((term, termIndex) => {
+          const monthlyData = getMonthlyDataForTerm(term.attendance);
+          const presentCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "P").length;
+          const leaveCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "L").length;
+          const absentCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "A").length;
+          
+          return (
+            <div key={termIndex} className="border rounded-xl overflow-hidden" data-testid={`term-history-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
               <button
-                onClick={() => toggleMonth(key)}
-                className="w-full flex items-center justify-between p-4 hover-elevate transition-all duration-200"
-                data-testid={`button-month-${key}`}
+                onClick={() => toggleTerm(term.termName)}
+                className="w-full flex items-center justify-between p-4 hover-elevate transition-all duration-200 bg-muted/30"
+                data-testid={`button-term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}
               >
                 <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-muted">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Award className="w-5 h-5 text-primary" />
                   </div>
                   <div className="text-left">
-                    <span className="font-semibold">{month} {year}</span>
-                    <div className="flex gap-3 text-xs mt-0.5">
-                      <span className="text-violet-600 dark:text-violet-400 font-medium">{presentCount} Present</span>
-                      <span className="text-yellow-600 dark:text-yellow-400 font-medium">{leaveCount} Leave</span>
-                      <span className="text-rose-600 dark:text-rose-400 font-medium">{absentCount} Absent</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-lg">{term.termName}</span>
+                      {getTermStatusBadge(term.status)}
+                    </div>
+                    <div className="flex flex-wrap gap-3 text-xs mt-1">
+                      <span className="font-medium">{term.attendedClasses}/{term.totalClasses} classes</span>
+                      <span className="text-violet-600 dark:text-violet-400 font-medium">{presentCount} P</span>
+                      <span className="text-yellow-600 dark:text-yellow-400 font-medium">{leaveCount} L</span>
+                      <span className="text-rose-600 dark:text-rose-400 font-medium">{absentCount} A</span>
                     </div>
                   </div>
                 </div>
-                <div className={`p-1.5 rounded-full transition-transform duration-200 ${expandedMonths.has(key) ? 'rotate-180 bg-primary/10' : 'bg-muted'}`}>
+                <div className={`p-1.5 rounded-full transition-transform duration-200 ${expandedTerms.has(term.termName) ? 'rotate-180 bg-primary/10' : 'bg-muted'}`}>
                   <ChevronDown className="w-4 h-4 text-muted-foreground" />
                 </div>
               </button>
-              
-              {expandedMonths.has(key) && (
-                <div className="border-t p-4 bg-muted/20">
-                  <div className="grid grid-cols-7 gap-1.5">
-                    {days.map((day, i) => (
-                      <div
-                        key={i}
-                        className="text-center p-2 rounded-lg bg-background border hover:border-primary/30 transition-colors"
-                        data-testid={`day-${day.date.replace(/\//g, "-")}`}
-                      >
-                        <p className="text-xs text-muted-foreground mb-1 font-medium">{day.dayOfMonth}</p>
-                        {getStatusBadge(day.status)}
+
+              {expandedTerms.has(term.termName) && (
+                <div className="border-t p-4 space-y-2 bg-background">
+                  {monthlyData.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-4">No attendance records for this term</p>
+                  ) : (
+                    monthlyData.map(({ key, month, year, days, presentCount: mPresent, leaveCount: mLeave, absentCount: mAbsent }) => (
+                      <div key={key} className="border rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => toggleMonth(`${term.termName}-${key}`)}
+                          className="w-full flex items-center justify-between p-3 hover-elevate transition-all duration-200"
+                          data-testid={`button-month-${term.termName.replace(/\s+/g, '-').toLowerCase()}-${key}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-1.5 rounded-md bg-muted">
+                              <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                            </div>
+                            <div className="text-left">
+                              <span className="font-semibold text-sm">{month} {year}</span>
+                              <div className="flex gap-2 text-xs mt-0.5">
+                                <span className="text-violet-600 dark:text-violet-400">{mPresent} P</span>
+                                <span className="text-yellow-600 dark:text-yellow-400">{mLeave} L</span>
+                                <span className="text-rose-600 dark:text-rose-400">{mAbsent} A</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className={`p-1 rounded-full transition-transform duration-200 ${expandedMonths.has(`${term.termName}-${key}`) ? 'rotate-180 bg-primary/10' : 'bg-muted'}`}>
+                            <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                          </div>
+                        </button>
+                        
+                        {expandedMonths.has(`${term.termName}-${key}`) && (
+                          <div className="border-t p-3 bg-muted/20">
+                            <div className="grid grid-cols-7 gap-1">
+                              {days.map((day, i) => (
+                                <div
+                                  key={i}
+                                  className="text-center p-1.5 rounded-md bg-background border hover:border-primary/30 transition-colors"
+                                >
+                                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">{day.dayOfMonth}</p>
+                                  {getStatusBadge(day.status)}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
@@ -868,10 +862,11 @@ export default function Home() {
               </Card>
 
               {studentData.student.terms && studentData.student.terms.length > 0 && (
-                <TermProgress terms={studentData.student.terms} />
+                <>
+                  <TermProgress terms={studentData.student.terms} />
+                  <TermwiseAttendanceHistory terms={studentData.student.terms} />
+                </>
               )}
-
-              <AttendanceHistory attendance={studentData.student.attendance} />
             </div>
           )}
 
