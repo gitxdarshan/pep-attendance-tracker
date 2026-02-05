@@ -1,0 +1,74 @@
+root@Vrsgram:~# ls
+Code-Unpacker  snap
+root@Vrsgram:~# cd Code-Unpacker
+root@Vrsgram:~/Code-Unpacker# npm install
+npm run build
+
+added 599 packages, and audited 600 packages in 25s
+
+83 packages are looking for funding
+  run `npm fund` for details
+
+3 vulnerabilities (1 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+transforming (5) ../node_modules/wouter/esm/index.js
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1956 modules transformed.
+../dist/public/index.html                              2.41 kB │ gzip:   0.92 kB
+../dist/public/assets/index-b1hddKyt.css              80.94 kB │ gzip:  13.06 kB
+../dist/public/assets/purify.es-Bzr520pe.js           22.45 kB │ gzip:   8.63 kB
+../dist/public/assets/index.es-lFiNc2mE.js           158.55 kB │ gzip:  52.90 kB
+../dist/public/assets/html2canvas.esm-DXEQVQnt.js    201.04 kB │ gzip:  47.43 kB
+../dist/public/assets/index-Dbm1Suph.js            1,049.78 kB │ gzip: 339.46 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.36s
+building server...
+
+  dist/index.cjs  2.2mb ⚠️
+
+⚡ Done in 322ms
+root@Vrsgram:~/Code-Unpacker# npm run build
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+transforming (5) ../node_modules/@tanstack/react-query/build/modern/index.js
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1956 modules transformed.
+../dist/public/index.html                              2.41 kB │ gzip:   0.92 kB
+../dist/public/assets/index-b1hddKyt.css              80.94 kB │ gzip:  13.06 kB
+../dist/public/assets/purify.es-Bzr520pe.js           22.45 kB │ gzip:   8.63 kB
+../dist/public/assets/index.es-lFiNc2mE.js           158.55 kB │ gzip:  52.90 kB
+../dist/public/assets/html2canvas.esm-DXEQVQnt.js    201.04 kB │ gzip:  47.43 kB
+../dist/public/assets/index-Dbm1Suph.js            1,049.78 kB │ gzip: 339.46 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.77s
+building server...
+
+  dist/index.cjs  2.2mb ⚠️
+
+⚡ Done in 258ms
+root@Vrsgram:~/Code-Unpacker#
