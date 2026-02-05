@@ -1,11 +1,25 @@
 import { z } from "zod";
 
+export const termDataSchema = z.object({
+  termName: z.string(),
+  percentage: z.number(),
+  attendedClasses: z.number(),
+  totalClasses: z.number(),
+  requiredClasses: z.number(),
+  status: z.enum(["Cleared", "Not Cleared", "In Progress"]),
+  remaining: z.number(),
+  attendance: z.record(z.string(), z.string()),
+});
+
+export type TermData = z.infer<typeof termDataSchema>;
+
 export const studentSchema = z.object({
   gender: z.string(),
   studentName: z.string(),
   rollNo: z.string(),
   school: z.string(),
   attendance: z.record(z.string(), z.string()),
+  terms: z.array(termDataSchema).optional(),
 });
 
 export type Student = z.infer<typeof studentSchema>;
@@ -13,6 +27,7 @@ export type Student = z.infer<typeof studentSchema>;
 export const attendanceDataSchema = z.object({
   students: z.array(studentSchema),
   headers: z.array(z.string()),
+  termNames: z.array(z.string()).optional(),
   lastUpdated: z.string(),
   error: z.string().optional(),
 });

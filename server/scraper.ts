@@ -4,7 +4,7 @@ import XLSX from "xlsx";
 import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer-core";
-import type { Student, AttendanceData, DayBreakdown, WeeklyData } from "@shared/schema";
+import type { Student, AttendanceData, DayBreakdown, WeeklyData, TermData } from "@shared/schema";
 
 const SHAREPOINT_URL = "https://vijaybhoomischool-my.sharepoint.com/:x:/g/personal/rinu_babu_vijaybhoomi_edu_in/EbLMrNHP8GdGvW4Vvs84o0MBMHULieSJmvqcZv-BXgWeVw?e=hatTjx";
 const DOWNLOAD_URL = `${SHAREPOINT_URL}&download=1`;
@@ -405,31 +405,91 @@ class AttendanceCache {
     const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
     console.log(`[Scraper] Found ${jsonData.length} rows in Excel`);
     
-    if (jsonData.length < 2) {
-      return { students: [], headers: [], lastUpdated: new Date().toISOString() };
+    if (jsonData.length < 3) {
+      return { students: [], headers: [], termNames: [], lastUpdated: new Date().toISOString() };
     }
 
-    let headerRowIndex = 0;
-    for (let i = 0; i < Math.min(10, jsonData.length); i++) {
-      const row = jsonData[i];
-      if (!row) continue;
-      
-      const rowStr = row.map((c: any) => String(c || '').toLowerCase()).join(' ');
-      if (rowStr.includes('name') || rowStr.includes('roll') || rowStr.includes('student')) {
-        headerRowIndex = i;
-        console.log(`[Scraper] Found header row at index ${i}`);
-        break;
+    const termRow = jsonData[0] || [];
+    const headerRow = jsonData[2] || [];
+    const headerRowIndex = 2;
+
+    interface TermInfo {
+      name: string;
+      startCol: number;
+      endCol: number;
+      percentageCol: number;
+      attendedCol: number;
+      totalCol: number;
+      criteriaCol: number;
+      dateColumns: { col: number; date: string }[];
+    }
+
+    const terms: TermInfo[] = [];
+    
+    for (let i = 0; i < termRow.length; i++) {
+      const cellValue = String(termRow[i] || '').trim().toUpperCase();
+      if (cellValue.includes('TERM') && !cellValue.includes('(L-')) {
+        const termName = cellValue.replace('TERM', '').trim() + ' TERM';
+        
+        let percentageCol = -1, attendedCol = -1, totalCol = -1, criteriaCol = -1;
+        for (let j = i + 1; j < Math.min(i + 10, headerRow.length); j++) {
+          const header = String(headerRow[j] || '').toLowerCase().trim();
+          if (header === '%' && percentageCol === -1) percentageCol = j;
+          if (header.includes('total') && header.includes('attend') && attendedCol === -1) attendedCol = j;
+          if (header.includes('total') && header.includes('class') && !header.includes('attend') && totalCol === -1) totalCol = j;
+          if (header.includes('criteria') && criteriaCol === -1) criteriaCol = j;
+        }
+
+        let nextTermStart = headerRow.length;
+        for (let k = i + 1; k < termRow.length; k++) {
+          const nextCell = String(termRow[k] || '').trim().toUpperCase();
+          if (nextCell.includes('TERM') && !nextCell.includes('(L-')) {
+            nextTermStart = k;
+            break;
+          }
+        }
+
+        const dateColumns: { col: number; date: string }[] = [];
+        const startDateCol = criteriaCol >= 0 ? criteriaCol + 1 : i + 10;
+        for (let j = startDateCol; j < nextTermStart; j++) {
+          const header = headerRow[j];
+          if (header === null || header === undefined) continue;
+          if (String(header).toLowerCase() === 'summary') continue;
+          
+          let dateStr: string | null = null;
+          
+          if (typeof header === 'number' && header > 40000 && header < 50000) {
+            const excelDate = new Date((header - 25569) * 86400 * 1000);
+            dateStr = `${excelDate.getMonth() + 1}/${excelDate.getDate()}/${excelDate.getFullYear()}`;
+          } else if (typeof header === 'string') {
+            const dateMatch = header.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/);
+            if (dateMatch) {
+              dateStr = header;
+            }
+          }
+          
+          if (dateStr) {
+            dateColumns.push({ col: j, date: dateStr });
+          }
+        }
+
+        terms.push({
+          name: termName,
+          startCol: i,
+          endCol: nextTermStart - 1,
+          percentageCol,
+          attendedCol,
+          totalCol,
+          criteriaCol,
+          dateColumns
+        });
+
+        console.log(`[Scraper] Found term: ${termName} (cols ${i}-${nextTermStart - 1}), dates: ${dateColumns.length}`);
       }
     }
 
-    const headerRow = jsonData[headerRowIndex];
-    if (!headerRow) {
-      return { students: [], headers: [], lastUpdated: new Date().toISOString() };
-    }
-
     let genderCol = -1, nameCol = -1, rollCol = -1, schoolCol = -1;
-    
-    for (let i = 0; i < headerRow.length; i++) {
+    for (let i = 0; i < Math.min(10, headerRow.length); i++) {
       const header = String(headerRow[i] || '').toLowerCase().trim();
       if (header.includes('gender') && genderCol === -1) genderCol = i;
       if ((header.includes('student') && header.includes('name')) || header === 'name') nameCol = i;
@@ -442,29 +502,13 @@ class AttendanceCache {
     
     console.log(`[Scraper] Column indices - Gender: ${genderCol}, Name: ${nameCol}, Roll: ${rollCol}, School: ${schoolCol}`);
 
-    const dateColumns: { col: number; date: string }[] = [];
-    for (let i = 0; i < headerRow.length; i++) {
-      const header = headerRow[i];
-      if (header === null || header === undefined) continue;
-      
-      let dateStr: string | null = null;
-      
-      if (typeof header === 'number' && header > 40000 && header < 50000) {
-        const excelDate = new Date((header - 25569) * 86400 * 1000);
-        dateStr = `${excelDate.getMonth() + 1}/${excelDate.getDate()}/${excelDate.getFullYear()}`;
-      } else if (typeof header === 'string') {
-        const dateMatch = header.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/);
-        if (dateMatch) {
-          dateStr = header;
-        }
-      }
-      
-      if (dateStr) {
-        dateColumns.push({ col: i, date: dateStr });
-      }
-    }
+    const allDateColumns: { col: number; date: string }[] = [];
+    terms.forEach(term => {
+      allDateColumns.push(...term.dateColumns);
+    });
 
     const students: Student[] = [];
+    const REQUIRED_CLASSES = 24;
     
     for (let rowIdx = headerRowIndex + 1; rowIdx < jsonData.length; rowIdx++) {
       const row = jsonData[rowIdx];
@@ -476,12 +520,51 @@ class AttendanceCache {
       if (!name || name.length < 2) continue;
       if (!rollNo || rollNo.length < 3) continue;
 
-      const attendance: Record<string, string> = {};
-      for (const { col, date } of dateColumns) {
+      const allAttendance: Record<string, string> = {};
+      for (const { col, date } of allDateColumns) {
         const value = row[col];
         if (value !== null && value !== undefined && value !== '') {
-          attendance[date] = String(value).trim().toUpperCase();
+          allAttendance[date] = String(value).trim().toUpperCase();
         }
+      }
+
+      const studentTerms: TermData[] = [];
+      
+      for (const term of terms) {
+        const percentage = typeof row[term.percentageCol] === 'number' ? row[term.percentageCol] : 0;
+        const attended = typeof row[term.attendedCol] === 'number' ? Math.round(row[term.attendedCol]) : 0;
+        const total = typeof row[term.totalCol] === 'number' ? Math.round(row[term.totalCol]) : 30;
+        const criteriaValue = String(row[term.criteriaCol] || '').toLowerCase().trim();
+        
+        const termAttendance: Record<string, string> = {};
+        for (const { col, date } of term.dateColumns) {
+          const value = row[col];
+          if (value !== null && value !== undefined && value !== '') {
+            termAttendance[date] = String(value).trim().toUpperCase();
+          }
+        }
+
+        let status: "Cleared" | "Not Cleared" | "In Progress";
+        if (criteriaValue.includes('cleared') && !criteriaValue.includes('not')) {
+          status = "Cleared";
+        } else if (criteriaValue.includes('not') || criteriaValue.includes('pending')) {
+          status = attended < total ? "In Progress" : "Not Cleared";
+        } else {
+          status = attended >= REQUIRED_CLASSES ? "Cleared" : (attended < total ? "In Progress" : "Not Cleared");
+        }
+
+        const remaining = Math.max(0, REQUIRED_CLASSES - attended);
+
+        studentTerms.push({
+          termName: term.name,
+          percentage: Math.round(percentage * 100) / 100,
+          attendedClasses: attended,
+          totalClasses: total,
+          requiredClasses: REQUIRED_CLASSES,
+          status,
+          remaining,
+          attendance: termAttendance
+        });
       }
 
       const student: Student = {
@@ -489,22 +572,22 @@ class AttendanceCache {
         studentName: name,
         rollNo,
         school: schoolCol >= 0 ? String(row[schoolCol] || '').trim() : '',
-        attendance
+        attendance: allAttendance,
+        terms: studentTerms
       };
 
       students.push(student);
     }
 
-    console.log(`[Scraper] Parsed ${students.length} students from Excel`);
-    if (students.length > 0) {
-      console.log(`[Scraper] First student: ${students[0].studentName}, Roll: ${students[0].rollNo}`);
-      const keys = Object.keys(students[0].attendance).slice(0, 5);
-      console.log(`[Scraper] Sample attendance dates: ${keys.join(', ')}`);
+    console.log(`[Scraper] Parsed ${students.length} students with ${terms.length} terms`);
+    if (students.length > 0 && students[0].terms) {
+      console.log(`[Scraper] First student: ${students[0].studentName}, Terms: ${students[0].terms.map(t => `${t.termName}(${t.attendedClasses}/${t.totalClasses})`).join(', ')}`);
     }
 
     return {
       students,
-      headers: dateColumns.map(d => d.date),
+      headers: allDateColumns.map(d => d.date),
+      termNames: terms.map(t => t.name),
       lastUpdated: new Date().toISOString()
     };
   }
