@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight } from "lucide-react";
-import type { StudentResponse, CacheStatus, Student } from "@shared/schema";
+import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight, Award, Target } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import type { StudentResponse, CacheStatus, Student, TermData } from "@shared/schema";
 import { Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import * as XLSX from "xlsx";
@@ -240,6 +241,111 @@ function AttendanceHistory({ attendance }: { attendance: Record<string, string> 
             </div>
           ))}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TermProgress({ terms }: { terms: TermData[] }) {
+  if (!terms || terms.length === 0) return null;
+
+  const getStatusStyles = (status: string) => {
+    switch (status) {
+      case "Cleared":
+        return {
+          badge: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+          progress: "bg-emerald-500",
+          icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />,
+          bg: "from-emerald-500/10 to-emerald-500/5 dark:from-emerald-500/20 dark:to-emerald-500/10 border-emerald-500/20"
+        };
+      case "Not Cleared":
+        return {
+          badge: "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30",
+          progress: "bg-rose-500",
+          icon: <XCircle className="w-4 h-4 text-rose-500" />,
+          bg: "from-rose-500/10 to-rose-500/5 dark:from-rose-500/20 dark:to-rose-500/10 border-rose-500/20"
+        };
+      default:
+        return {
+          badge: "bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30",
+          progress: "bg-amber-500",
+          icon: <Clock className="w-4 h-4 text-amber-500" />,
+          bg: "from-amber-500/10 to-amber-500/5 dark:from-amber-500/20 dark:to-amber-500/10 border-amber-500/20"
+        };
+    }
+  };
+
+  return (
+    <Card className="overflow-hidden" data-testid="card-term-progress">
+      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5">
+        <CardTitle className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Target className="w-5 h-5 text-primary" />
+          </div>
+          <span>Term-wise Attendance</span>
+        </CardTitle>
+        <CardDescription className="flex items-center gap-2">
+          <span>Requirement: 24 out of 30 classes per term to be marked as Cleared</span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="p-6 space-y-4">
+        {terms.map((term, index) => {
+          const styles = getStatusStyles(term.status);
+          const progressPercent = Math.min((term.attendedClasses / term.requiredClasses) * 100, 100);
+          
+          return (
+            <div key={index} className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${styles.bg} p-5 border`} data-testid={`term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-background/50">
+                    <Award className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-lg">{term.termName}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {term.attendedClasses} / {term.totalClasses} classes attended
+                    </p>
+                  </div>
+                </div>
+                <Badge className={`${styles.badge} font-semibold`} data-testid={`badge-status-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
+                  {styles.icon}
+                  <span className="ml-1.5">{term.status}</span>
+                </Badge>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground font-medium">Progress to requirement ({term.requiredClasses} classes)</span>
+                  <span className="font-bold">{Math.round(progressPercent)}%</span>
+                </div>
+                <div className="h-3 rounded-full bg-background/50 overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-500 ${styles.progress}`}
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                {term.status === "In Progress" && term.remaining > 0 && (
+                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {term.remaining} more classes needed to clear this term
+                  </p>
+                )}
+                {term.status === "Cleared" && (
+                  <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400 mt-2 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Term requirement completed
+                  </p>
+                )}
+                {term.status === "Not Cleared" && (
+                  <p className="text-sm font-medium text-rose-600 dark:text-rose-400 mt-2 flex items-center gap-1.5">
+                    <XCircle className="w-3.5 h-3.5" />
+                    Term ended without meeting requirement - {term.remaining} classes pending
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </CardContent>
     </Card>
   );
@@ -761,6 +867,10 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
+
+              {studentData.student.terms && studentData.student.terms.length > 0 && (
+                <TermProgress terms={studentData.student.terms} />
+              )}
 
               <AttendanceHistory attendance={studentData.student.attendance} />
             </div>
