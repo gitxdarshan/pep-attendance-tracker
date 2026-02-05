@@ -25,6 +25,7 @@ interface MonthlyData {
   presentCount: number;
   leaveCount: number;
   absentCount: number;
+  warningCount: number;
   notMarkedCount: number;
 }
 
@@ -41,6 +42,8 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
         return <Badge className="bg-yellow-400/20 text-yellow-700 dark:text-yellow-300 border-yellow-400/30 text-xs font-semibold">L</Badge>;
       case "A":
         return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-semibold">A</Badge>;
+      case "W":
+        return <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30 text-xs font-semibold">W</Badge>;
       default:
         return <Badge variant="outline" className="text-xs opacity-50">-</Badge>;
     }
@@ -104,6 +107,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
           presentCount: 0,
           leaveCount: 0,
           absentCount: 0,
+          warningCount: 0,
           notMarkedCount: 0
         };
       }
@@ -112,6 +116,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
       if (upperStatus === "P") months[monthKey].presentCount++;
       else if (upperStatus === "L") months[monthKey].leaveCount++;
       else if (upperStatus === "A") months[monthKey].absentCount++;
+      else if (upperStatus === "W") months[monthKey].warningCount++;
       else months[monthKey].notMarkedCount++;
 
       months[monthKey].days.push({
@@ -151,6 +156,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
           const presentCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "P").length;
           const leaveCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "L").length;
           const absentCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "A").length;
+          const warningCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "W").length;
           
           return (
             <div key={termIndex} className="border rounded-xl overflow-hidden" data-testid={`term-history-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
@@ -173,6 +179,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
                       <span className="text-violet-600 dark:text-violet-400 font-medium">{presentCount} P</span>
                       <span className="text-yellow-600 dark:text-yellow-400 font-medium">{leaveCount} L</span>
                       <span className="text-rose-600 dark:text-rose-400 font-medium">{absentCount} A</span>
+                      {warningCount > 0 && <span className="text-orange-600 dark:text-orange-400 font-medium">{warningCount} W</span>}
                     </div>
                   </div>
                 </div>
@@ -186,7 +193,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
                   {monthlyData.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4">No attendance records for this term</p>
                   ) : (
-                    monthlyData.map(({ key, month, year, days, presentCount: mPresent, leaveCount: mLeave, absentCount: mAbsent }) => (
+                    monthlyData.map(({ key, month, year, days, presentCount: mPresent, leaveCount: mLeave, absentCount: mAbsent, warningCount: mWarning }) => (
                       <div key={key} className="border rounded-lg overflow-hidden">
                         <button
                           onClick={() => toggleMonth(`${term.termName}-${key}`)}
@@ -203,6 +210,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
                                 <span className="text-violet-600 dark:text-violet-400">{mPresent} P</span>
                                 <span className="text-yellow-600 dark:text-yellow-400">{mLeave} L</span>
                                 <span className="text-rose-600 dark:text-rose-400">{mAbsent} A</span>
+                                {mWarning > 0 && <span className="text-orange-600 dark:text-orange-400">{mWarning} W</span>}
                               </div>
                             </div>
                           </div>
@@ -401,6 +409,8 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
         return <Badge className="bg-yellow-400/20 text-yellow-700 dark:text-yellow-300 border-yellow-400/30 text-[10px] font-bold px-1.5 py-0">L</Badge>;
       case "A":
         return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-[10px] font-bold px-1.5 py-0">A</Badge>;
+      case "W":
+        return <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30 text-[10px] font-bold px-1.5 py-0">W</Badge>;
       default:
         return null;
     }
@@ -415,6 +425,8 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
         return "bg-yellow-400/10 border-yellow-400/30";
       case "A":
         return "bg-rose-500/10 border-rose-500/30";
+      case "W":
+        return "bg-orange-500/10 border-orange-500/30";
       default:
         return "bg-background";
     }
@@ -436,14 +448,15 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
   }
 
   const monthStats = useMemo(() => {
-    let present = 0, leave = 0, absent = 0;
+    let present = 0, leave = 0, absent = 0, warning = 0;
     for (let day = 1; day <= daysInMonth; day++) {
       const status = getAttendanceForDate(day);
       if (status === "P") present++;
       else if (status === "L") leave++;
       else if (status === "A") absent++;
+      else if (status === "W") warning++;
     }
-    return { present, leave, absent, total: present + leave + absent };
+    return { present, leave, absent, warning, total: present + leave + absent + warning };
   }, [currentDate, attendance]);
 
   return (
@@ -491,6 +504,10 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
               <span className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-rose-500"></div>
                 <span className="text-muted-foreground">A: <span className="font-semibold text-foreground">{monthStats.absent}</span></span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-orange-500"></div>
+                <span className="text-muted-foreground">W: <span className="font-semibold text-foreground">{monthStats.warning}</span></span>
               </span>
             </div>
           </div>
@@ -690,6 +707,8 @@ export default function Home() {
         return <Badge className="bg-yellow-400/20 text-yellow-700 dark:text-yellow-300 border-yellow-400/30 text-xs font-semibold">L</Badge>;
       case "Absent":
         return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-semibold">A</Badge>;
+      case "Warning":
+        return <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30 text-xs font-semibold">W</Badge>;
       case "Future":
         return <Badge variant="secondary" className="text-xs opacity-50">-</Badge>;
       default:
@@ -1023,10 +1042,11 @@ export default function Home() {
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
                           <User className="w-8 h-8 text-primary" />
                         </div>
-                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-background flex items-center justify-center ${studentData.todayStatus === 'Present' ? 'bg-violet-500' : studentData.todayStatus === 'Leave' ? 'bg-yellow-400' : studentData.todayStatus === 'Absent' ? 'bg-rose-500' : 'bg-muted'}`}>
+                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-background flex items-center justify-center ${studentData.todayStatus === 'Present' ? 'bg-violet-500' : studentData.todayStatus === 'Leave' ? 'bg-yellow-400' : studentData.todayStatus === 'Absent' ? 'bg-rose-500' : studentData.todayStatus === 'Warning' ? 'bg-orange-500' : 'bg-muted'}`}>
                           {studentData.todayStatus === 'Present' && <CheckCircle2 className="w-3 h-3 text-white" />}
                           {studentData.todayStatus === 'Leave' && <Clock className="w-3 h-3 text-white" />}
                           {studentData.todayStatus === 'Absent' && <XCircle className="w-3 h-3 text-white" />}
+                          {studentData.todayStatus === 'Warning' && <AlertCircle className="w-3 h-3 text-white" />}
                         </div>
                       </div>
                       <div>

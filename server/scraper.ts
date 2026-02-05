@@ -714,8 +714,10 @@ class AttendanceCache {
     const status = student.attendance[todayStr];
     
     if (!status) return 'Not marked';
-    if (status === 'P') return 'Present';
-    if (status === 'L') return 'Leave';
+    const upperStatus = status.toUpperCase();
+    if (upperStatus === 'P') return 'Present';
+    if (upperStatus === 'L') return 'Leave';
+    if (upperStatus === 'W') return 'Warning';
     return 'Absent';
   }
 
@@ -731,14 +733,17 @@ class AttendanceCache {
       const dateStr = `${date.month}/${date.day}/${date.year}`;
       const status = student.attendance[dateStr];
       
-      let displayStatus: "Present" | "Leave" | "Absent" | "Not marked" | "Future" = "Not marked";
+      let displayStatus: "Present" | "Leave" | "Absent" | "Warning" | "Not marked" | "Future" = "Not marked";
+      const upperStatus = status?.toUpperCase();
       if (date > now) {
         displayStatus = "Future";
-      } else if (status === 'P') {
+      } else if (upperStatus === 'P') {
         displayStatus = "Present";
         presentCount++;
-      } else if (status === 'L') {
+      } else if (upperStatus === 'L') {
         displayStatus = "Leave";
+      } else if (upperStatus === 'W') {
+        displayStatus = "Warning";
       } else if (status) {
         displayStatus = "Absent";
       }

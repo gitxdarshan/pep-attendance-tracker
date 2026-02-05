@@ -37,7 +37,7 @@ export type AttendanceData = z.infer<typeof attendanceDataSchema>;
 export interface StudentResponse {
   student: Student;
   todayDate: string;
-  todayStatus: "Present" | "Leave" | "Absent" | "Not marked";
+  todayStatus: "Present" | "Leave" | "Absent" | "Warning" | "Not marked";
   isTodayMarked: boolean;
   weeklyData: WeeklyData;
   weeklyBreakdown: DayBreakdown[];
@@ -53,7 +53,7 @@ export interface WeeklyData {
 export interface DayBreakdown {
   day: string;
   date: string;
-  status: "Present" | "Leave" | "Absent" | "Not marked" | "Future";
+  status: "Present" | "Leave" | "Absent" | "Warning" | "Not marked" | "Future";
 }
 
 export interface PendingStudent {

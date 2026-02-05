@@ -37,7 +37,7 @@ export async function registerRoutes(
     const response: StudentResponse = {
       student,
       todayDate: new Date().toISOString().split('T')[0],
-      todayStatus: todayStatus as "Not marked" | "Present" | "Leave" | "Absent",
+      todayStatus: todayStatus as "Not marked" | "Present" | "Leave" | "Absent" | "Warning",
       isTodayMarked: todayStatus !== "Not marked",
       weeklyData,
       weeklyBreakdown
