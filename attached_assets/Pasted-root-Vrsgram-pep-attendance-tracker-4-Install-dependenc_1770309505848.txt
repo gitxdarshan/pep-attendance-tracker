@@ -1,0 +1,58 @@
+root@Vrsgram:~/pep-attendance-tracker# # 4. Install dependencies
+npm install
+# 5. Set environment variable for Chromium path
+export PUPPETEER_EXECUTABLE_PATH=/snap/bin/chromium
+# 6. Build the application
+npm run build
+# 7. Start the server
+npm start
+
+added 563 packages, and audited 564 packages in 1m
+
+70 packages are looking for funding
+  run `npm fund` for details
+
+1 high severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.1 building client environment for production...
+✓ 0 modules transformed.
+✗ Build failed in 205ms
+Could not resolve entry module "index.html".
+    at getRollupError (file:///root/pep-attendance-tracker/node_modules/rollup/dist/es/shared/parseAst.js:402:41)
+    at error (file:///root/pep-attendance-tracker/node_modules/rollup/dist/es/shared/parseAst.js:398:42)
+    at ModuleLoader.loadEntryModule (/root/pep-attendance-tracker/node_modules/rollup/dist/es/shared/node-entry.js:21708:20)
+    at async Promise.all (index 0) {
+  code: 'UNRESOLVED_ENTRY'
+}
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.cjs
+
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module '/root/pep-attendance-tracker/dist/index.cjs'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.22.0
+root@Vrsgram:~/pep-attendance-tracker#
