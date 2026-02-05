@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight, Award, Target } from "lucide-react";
+import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
 import type { StudentResponse, CacheStatus, Student, TermData } from "@shared/schema";
 import { Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -344,11 +344,43 @@ function TermProgress({ terms }: { terms: TermData[] }) {
   );
 }
 
+const SAVED_STUDENT_KEY = "pep_saved_student";
+
+function getSavedStudent(): { rollNo: string; name: string } | null {
+  try {
+    const saved = localStorage.getItem(SAVED_STUDENT_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error("Error reading saved student:", e);
+  }
+  return null;
+}
+
+function saveStudent(rollNo: string, name: string) {
+  try {
+    localStorage.setItem(SAVED_STUDENT_KEY, JSON.stringify({ rollNo, name }));
+  } catch (e) {
+    console.error("Error saving student:", e);
+  }
+}
+
+function clearSavedStudent() {
+  try {
+    localStorage.removeItem(SAVED_STUDENT_KEY);
+  } catch (e) {
+    console.error("Error clearing saved student:", e);
+  }
+}
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState<"roll" | "name">("roll");
   const [activeSearch, setActiveSearch] = useState("");
   const [selectedRollNo, setSelectedRollNo] = useState<string | null>(null);
+  const [isRemembered, setIsRemembered] = useState(false);
+  const [isSavedStudent, setIsSavedStudent] = useState(false);
 
   const { data: cacheStatus } = useQuery<CacheStatus>({
     queryKey: ["/api/status"],
@@ -394,6 +426,51 @@ export default function Home() {
       setSelectedRollNo(searchResults.students[0].rollNo);
     }
   }, [searchResults, selectedRollNo]);
+
+  useEffect(() => {
+    const saved = getSavedStudent();
+    if (saved && !selectedRollNo && !activeSearch) {
+      setSelectedRollNo(saved.rollNo);
+      setIsRemembered(true);
+      setIsSavedStudent(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedRollNo) {
+      const saved = getSavedStudent();
+      if (saved && saved.rollNo === selectedRollNo) {
+        setIsRemembered(true);
+        setIsSavedStudent(true);
+      } else {
+        setIsRemembered(false);
+        setIsSavedStudent(false);
+      }
+    }
+  }, [selectedRollNo]);
+
+  const handleRememberToggle = () => {
+    if (!studentData) return;
+    
+    if (isRemembered) {
+      clearSavedStudent();
+      setIsRemembered(false);
+      setIsSavedStudent(false);
+    } else {
+      saveStudent(studentData.student.rollNo, studentData.student.studentName);
+      setIsRemembered(true);
+      setIsSavedStudent(true);
+    }
+  };
+
+  const handleLogout = () => {
+    clearSavedStudent();
+    setIsRemembered(false);
+    setIsSavedStudent(false);
+    setSelectedRollNo(null);
+    setActiveSearch("");
+    setSearchQuery("");
+  };
 
   const handleRefresh = async () => {
     await apiRequest("GET", "/api/refresh");
@@ -728,6 +805,17 @@ export default function Home() {
 
           {studentData && selectedRollNo && (
             <div className="space-y-4">
+              {isSavedStudent && !activeSearch && (
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20" data-testid="welcome-back-banner">
+                  <div className="p-2 rounded-lg bg-primary/20">
+                    <Heart className="w-5 h-5 text-primary fill-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-primary">Welcome back, {studentData.student.studentName.split(' ')[0]}!</p>
+                    <p className="text-sm text-muted-foreground">Your attendance is auto-loaded</p>
+                  </div>
+                </div>
+              )}
               {searchResults && searchResults.count > 1 && (
                 <Button
                   variant="ghost"
@@ -772,7 +860,38 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    <div className="print:hidden">
+                    <div className="print:hidden flex items-center gap-2">
+                      <Button
+                        variant={isRemembered ? "default" : "outline"}
+                        size="sm"
+                        onClick={handleRememberToggle}
+                        className="gap-1.5"
+                        data-testid="button-remember-me"
+                      >
+                        {isRemembered ? (
+                          <>
+                            <Heart className="w-4 h-4 fill-current" />
+                            <span className="hidden sm:inline">Saved</span>
+                          </>
+                        ) : (
+                          <>
+                            <HeartOff className="w-4 h-4" />
+                            <span className="hidden sm:inline">Remember</span>
+                          </>
+                        )}
+                      </Button>
+                      {isSavedStudent && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleLogout}
+                          className="gap-1.5 text-muted-foreground hover:text-destructive"
+                          data-testid="button-logout"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span className="hidden sm:inline">Switch</span>
+                        </Button>
+                      )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="sm" className="gap-1.5" data-testid="button-export-dropdown">
