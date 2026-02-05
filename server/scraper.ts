@@ -551,7 +551,11 @@ class AttendanceCache {
           const parts = lastDateStr.split('/');
           if (parts.length === 3) {
             const lastDate = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
-            termEnded = today > lastDate;
+            const daysSinceLastClass = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+            // Term is only ended if:
+            // 1. It has reached 30 classes AND last class was more than 7 days ago, OR
+            // 2. Last class was more than 30 days ago (term definitely over)
+            termEnded = (total >= 30 && daysSinceLastClass > 7) || daysSinceLastClass > 30;
           }
         }
 
