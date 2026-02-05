@@ -1,0 +1,57 @@
+root@Vrsgram:~/pep-attendance-tracker# PUPPETEER_EXECUTABLE_PATH=/snap/bin/chromium pm2 start npm --name "pep-tracker" -- start
+pm2 save
+[PM2] Starting /root/.nvm/versions/node/v22.22.0/bin/npm in fork_mode (1 instance)
+[PM2] Done.
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ pep-tracker        │ fork     │ 0    │ online    │ 0%       │ 28.7mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2] Saving current process list...
+[PM2] Successfully saved in /root/.pm2/dump.pm2
+root@Vrsgram:~/pep-attendance-tracker# pm2 logs pep-tracker --lines 20
+[TAILING] Tailing last 20 lines for [pep-tracker] process (change the value with --lines option)
+/root/.pm2/logs/pep-tracker-error.log last 20 lines:
+0|pep-trac |
+0|pep-trac | stderr:
+0|pep-trac | sh: 0: getcwd() failed: No such file or directory
+0|pep-trac | Command '/usr/bin/chromium-browser' requires the chromium snap to be installed.
+0|pep-trac | Please install it with:
+0|pep-trac | snap install chromium
+0|pep-trac |
+0|pep-trac | TROUBLESHOOTING: https://pptr.dev/troubleshooting
+0|pep-trac |
+0|pep-trac | [Scraper] ERROR: Failed to launch the browser process:  Code: 1
+0|pep-trac |
+0|pep-trac | stderr:
+0|pep-trac | sh: 0: getcwd() failed: No such file or directory
+0|pep-trac | Command '/usr/bin/chromium-browser' requires the chromium snap to be installed.
+0|pep-trac | Please install it with:
+0|pep-trac | snap install chromium
+0|pep-trac |
+0|pep-trac | TROUBLESHOOTING: https://pptr.dev/troubleshooting
+0|pep-trac |
+0|pep-trac | Killed
+
+/root/.pm2/logs/pep-tracker-out.log last 20 lines:
+0|pep-trac | 12:51:17 AM [express] serving on port 5000
+0|pep-trac | [Scraper] Navigating to SharePoint...
+0|pep-trac | 12:51:22 AM [express] GET /api/status 200 in 3ms :: {"lastUpdated":null,"studentCount":0,"isLoading":true,"error":null,"isDemoData":false,"cleanup":{"lastCleanup":"2026-02-05T16:51:17.487Z","totalFilesDeleted":0,"totalCleanups":1,"totalBytesFreed":0,"nextCleanupIn":"30 minutes"}}
+0|pep-trac | 12:51:27 AM [express] GET /api/status 304 in 1ms :: {"lastUpdated":null,"studentCount":0,"isLoading":true,"error":null,"isDemoData":false,"cleanup":{"lastCleanup":"2026-02-05T16:51:17.487Z","totalFilesDeleted":0,"totalCleanups":1,"totalBytesFreed":0,"nextCleanupIn":"30 minutes"}}
+0|pep-trac | [Scraper] Got 8 cookies
+0|pep-trac | [Scraper] Downloading with cookies via HTTP...
+0|pep-trac | [Scraper] HTTP Status: 200
+0|pep-trac | [Scraper] Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+0|pep-trac | [Scraper] Downloaded 110308 bytes
+0|pep-trac | [Scraper] Saved file to /tmp/attendance/attendance.xlsx
+0|pep-trac | [Scraper] Parsing Excel file...
+0|pep-trac | [Scraper] Available sheets: Attendance, ERP Schedule, Sheet2, Sheet5, Sheet6
+0|pep-trac | [Scraper] Using sheet: Attendance
+0|pep-trac | [Scraper] Found 102 rows in Excel
+0|pep-trac | [Scraper] Found term: FESTIVAL TERM (cols 5-74), dates: 52
+0|pep-trac | [Scraper] Found term: REPUBLIC TERM (cols 75-137), dates: 23
+0|pep-trac | [Scraper] Column indices - Gender: 1, Name: 2, Roll: 3, School: 4
+0|pep-trac | [Scraper] Parsed 91 students with 2 terms
+0|pep-trac | [Scraper] First student: Adarsh Datta Narhare, Terms: FESTIVAL TERM(22/30), REPUBLIC TERM(11/30)
+0|pep-trac | [Scraper] SUCCESS: Loaded 91 students
+
