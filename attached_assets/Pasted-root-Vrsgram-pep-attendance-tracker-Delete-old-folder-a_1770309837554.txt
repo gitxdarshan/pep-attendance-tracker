@@ -1,0 +1,82 @@
+root@Vrsgram:~/pep-attendance-tracker# # Delete old folder and re-clone
+cd ~
+rm -rf pep-attendance-tracker
+git clone https://github.com/gitxdarshan/pep-attendance-tracker.git
+cd pep-attendance-tracker
+
+# Install dependencies
+npm install
+
+# Set Chromium path
+export PUPPETEER_EXECUTABLE_PATH=/snap/bin/chromium
+
+# Build
+npm run build
+
+# Test it works
+npm start
+Cloning into 'pep-attendance-tracker'...
+remote: Enumerating objects: 669, done.
+remote: Counting objects: 100% (84/84), done.
+remote: Compressing objects: 100% (84/84), done.
+remote: Total 669 (delta 83), reused 0 (delta 0), pack-reused 585 (from 2)
+Receiving objects: 100% (669/669), 129.04 KiB | 3.91 MiB/s, done.
+Resolving deltas: 100% (396/396), done.
+
+added 563 packages, and audited 564 packages in 1m
+
+70 packages are looking for funding
+  run `npm fund` for details
+
+1 high severity vulnerability
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+✘ [ERROR] Could not resolve "/root/pep-attendance-tracker/vite.config.production.ts"
+
+failed to load config from /root/pep-attendance-tracker/vite.config.production.ts
+Error: Build failed with 1 error:
+error: Could not resolve "/root/pep-attendance-tracker/vite.config.production.ts"
+    at failureErrorWithLog (/root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+    at /root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:926:25
+    at runOnEndCallbacks (/root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:1307:45)
+    at buildResponseToResult (/root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:924:7)
+    at /root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:951:16
+    at responseCallbacks.<computed> (/root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+    at handleIncomingPacket (/root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+    at Socket.readFromStdout (/root/pep-attendance-tracker/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+    at Socket.emit (node:events:519:28)
+    at addChunk (node:internal/streams/readable:561:12) {
+  errors: [Getter/Setter],
+  warnings: [Getter/Setter]
+}
+
+> rest-express@1.0.0 start
+> NODE_ENV=production node dist/index.cjs
+
+node:internal/modules/cjs/loader:1386
+  throw err;
+  ^
+
+Error: Cannot find module '/root/pep-attendance-tracker/dist/index.cjs'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1383:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:237:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:171:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
+
+Node.js v22.22.0
+root@Vrsgram:~/pep-attendance-tracker#
