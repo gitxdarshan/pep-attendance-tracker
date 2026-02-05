@@ -97,5 +97,25 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/cleanup", (req, res) => {
+    try {
+      const result = attendanceCache.runCleanup();
+      const stats = attendanceCache.getCleanupStats();
+      res.json({ 
+        success: true, 
+        message: "Cleanup completed successfully",
+        thisCleanup: result,
+        totalStats: stats
+      });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Failed to run cleanup" });
+    }
+  });
+
+  app.get("/api/cleanup/stats", (req, res) => {
+    const stats = attendanceCache.getCleanupStats();
+    res.json(stats);
+  });
+
   return httpServer;
 }

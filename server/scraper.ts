@@ -10,9 +10,12 @@ const SHAREPOINT_URL = "https://vijaybhoomischool-my.sharepoint.com/:x:/g/person
 const DOWNLOAD_URL = `${SHAREPOINT_URL}&download=1`;
 
 const CACHE_DURATION_MS = 10 * 60 * 1000;
+const CLEANUP_INTERVAL_MS = 30 * 60 * 1000;
+const MAX_FILE_AGE_MS = 60 * 60 * 1000;
 const TIMEZONE = "Asia/Kolkata";
 const DOWNLOAD_PATH = "/tmp/attendance";
 const FILE_PATH = path.join(DOWNLOAD_PATH, "attendance.xlsx");
+const PUPPETEER_TEMP_PREFIX = "attendance_scraper_puppeteer_";
 
 function getChromiumPath(): string {
   const possiblePaths = [
@@ -58,6 +61,13 @@ interface CacheData {
   isDemoData: boolean;
 }
 
+interface CleanupStats {
+  lastCleanup: Date | null;
+  filesDeleted: number;
+  totalCleanups: number;
+  bytesFreed: number;
+}
+
 class AttendanceCache {
   private cache: CacheData = {
     data: null,
@@ -66,11 +76,151 @@ class AttendanceCache {
     error: null,
     isDemoData: false
   };
+  private cleanupStats: CleanupStats = {
+    lastCleanup: null,
+    filesDeleted: 0,
+    totalCleanups: 0,
+    bytesFreed: 0
+  };
   private refreshTimer: NodeJS.Timeout | null = null;
+  private cleanupTimer: NodeJS.Timeout | null = null;
 
   constructor() {
     this.ensureDownloadFolder();
     this.startAutoRefresh();
+    this.startAutoCleanup();
+  }
+
+  private startAutoCleanup() {
+    this.runCleanup();
+    this.cleanupTimer = setInterval(() => {
+      this.runCleanup();
+    }, CLEANUP_INTERVAL_MS);
+    console.log(`[Scraper] Auto cleanup scheduled every ${CLEANUP_INTERVAL_MS / 60000} minutes`);
+  }
+
+  runCleanup(): { filesDeleted: number; bytesFreed: number } {
+    console.log("[Scraper] Running cache cleanup...");
+    
+    const excelResult = this.cleanupOldExcelFiles();
+    const puppeteerResult = this.cleanupStalePuppeteerDirs();
+    
+    const filesDeleted = excelResult.filesDeleted + puppeteerResult.dirsDeleted;
+    const bytesFreed = excelResult.bytesFreed + puppeteerResult.bytesFreed;
+
+    this.cleanupStats.lastCleanup = new Date();
+    this.cleanupStats.filesDeleted += filesDeleted;
+    this.cleanupStats.totalCleanups++;
+    this.cleanupStats.bytesFreed += bytesFreed;
+
+    console.log(`[Scraper] Cleanup complete: ${filesDeleted} files/dirs deleted, ${(bytesFreed / 1024).toFixed(2)} KB freed`);
+    return { filesDeleted, bytesFreed };
+  }
+
+  private cleanupOldExcelFiles(): { filesDeleted: number; bytesFreed: number } {
+    let filesDeleted = 0;
+    let bytesFreed = 0;
+    try {
+      if (!fs.existsSync(DOWNLOAD_PATH)) return { filesDeleted: 0, bytesFreed: 0 };
+
+      const files = fs.readdirSync(DOWNLOAD_PATH);
+      const now = Date.now();
+
+      for (const file of files) {
+        if (!file.endsWith('.xlsx') && !file.endsWith('.xls')) continue;
+        
+        const filePath = path.join(DOWNLOAD_PATH, file);
+        
+        if (filePath === FILE_PATH && this.cache.data !== null) {
+          continue;
+        }
+        
+        try {
+          const stats = fs.statSync(filePath);
+          const fileAge = now - stats.mtimeMs;
+
+          if (fileAge > MAX_FILE_AGE_MS) {
+            bytesFreed += stats.size;
+            fs.unlinkSync(filePath);
+            filesDeleted++;
+            console.log(`[Scraper] Deleted old Excel file: ${file} (age: ${Math.round(fileAge / 60000)} mins)`);
+          }
+        } catch (err) {
+          console.error(`[Scraper] Error checking file ${file}: ${err}`);
+        }
+      }
+    } catch (err) {
+      console.error(`[Scraper] Error during Excel cleanup: ${err}`);
+    }
+    return { filesDeleted, bytesFreed };
+  }
+
+  private cleanupStalePuppeteerDirs(): { dirsDeleted: number; bytesFreed: number } {
+    let dirsDeleted = 0;
+    let bytesFreed = 0;
+    const tmpDir = '/tmp';
+
+    try {
+      const entries = fs.readdirSync(tmpDir);
+      const now = Date.now();
+
+      for (const entry of entries) {
+        if (!entry.startsWith(PUPPETEER_TEMP_PREFIX)) continue;
+
+        const dirPath = path.join(tmpDir, entry);
+        try {
+          const stats = fs.statSync(dirPath);
+          if (!stats.isDirectory()) continue;
+
+          const dirAge = now - stats.mtimeMs;
+          if (dirAge > MAX_FILE_AGE_MS) {
+            const dirSize = this.getDirectorySize(dirPath);
+            fs.rmSync(dirPath, { recursive: true, force: true });
+            bytesFreed += dirSize;
+            dirsDeleted++;
+            console.log(`[Scraper] Deleted stale puppeteer dir: ${entry} (age: ${Math.round(dirAge / 60000)} mins)`);
+          }
+        } catch (err) {
+          console.error(`[Scraper] Error cleaning puppeteer dir ${entry}: ${err}`);
+        }
+      }
+    } catch (err) {
+      console.error(`[Scraper] Error during puppeteer cleanup: ${err}`);
+    }
+
+    return { dirsDeleted, bytesFreed };
+  }
+
+  private getDirectorySize(dirPath: string): number {
+    let size = 0;
+    try {
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      for (const entry of entries) {
+        const entryPath = path.join(dirPath, entry.name);
+        if (entry.isDirectory()) {
+          size += this.getDirectorySize(entryPath);
+        } else {
+          try {
+            size += fs.statSync(entryPath).size;
+          } catch {}
+        }
+      }
+    } catch {}
+    return size;
+  }
+
+  private deleteOldDataFile(): boolean {
+    try {
+      if (fs.existsSync(FILE_PATH)) {
+        const stats = fs.statSync(FILE_PATH);
+        fs.unlinkSync(FILE_PATH);
+        console.log(`[Scraper] Deleted old data file before refresh (${(stats.size / 1024).toFixed(2)} KB)`);
+        return true;
+      }
+    } catch (err) {
+      console.error(`[Scraper] Error deleting old data file: ${err}`);
+    }
+    return false;
   }
 
   private ensureDownloadFolder() {
@@ -95,8 +245,8 @@ class AttendanceCache {
     const chromiumPath = getChromiumPath();
     console.log(`[Scraper] Using Chromium at: ${chromiumPath}`);
     
-    // Create unique userDataDir for each session
-    const userDataDir = path.join('/tmp', `puppeteer_${Date.now()}_${Math.random().toString(36).substring(7)}`);
+    // Create unique userDataDir for each session with app-specific prefix
+    const userDataDir = path.join('/tmp', `${PUPPETEER_TEMP_PREFIX}${Date.now()}_${Math.random().toString(36).substring(7)}`);
     
     const browser = await puppeteer.launch({
       executablePath: chromiumPath,
@@ -197,6 +347,8 @@ class AttendanceCache {
 
     try {
       this.ensureDownloadFolder();
+
+      this.deleteOldDataFile();
 
       const buffer = await this.downloadWithPuppeteer();
 
@@ -363,7 +515,24 @@ class AttendanceCache {
       studentCount: this.cache.data?.students.length || 0,
       isLoading: this.cache.isLoading,
       error: this.cache.error,
-      isDemoData: this.cache.isDemoData
+      isDemoData: this.cache.isDemoData,
+      cleanup: {
+        lastCleanup: this.cleanupStats.lastCleanup?.toISOString() || null,
+        totalFilesDeleted: this.cleanupStats.filesDeleted,
+        totalCleanups: this.cleanupStats.totalCleanups,
+        totalBytesFreed: this.cleanupStats.bytesFreed,
+        nextCleanupIn: `${Math.round(CLEANUP_INTERVAL_MS / 60000)} minutes`
+      }
+    };
+  }
+
+  getCleanupStats() {
+    return {
+      lastCleanup: this.cleanupStats.lastCleanup?.toISOString() || null,
+      totalFilesDeleted: this.cleanupStats.filesDeleted,
+      totalCleanups: this.cleanupStats.totalCleanups,
+      totalBytesFreed: this.cleanupStats.bytesFreed,
+      bytesFreedFormatted: `${(this.cleanupStats.bytesFreed / 1024).toFixed(2)} KB`
     };
   }
 
