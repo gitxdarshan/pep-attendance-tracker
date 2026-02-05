@@ -48,10 +48,23 @@ Preferred communication style: Simple, everyday language.
 - `server/`: Express backend with scraping logic
 - `shared/`: Zod schemas shared between frontend and backend for type safety
 
+### Term-wise Attendance Tracking
+The system tracks attendance across multiple academic terms:
+- **Festival Term**: October-December (30 classes total)
+- **Republic Term**: January-February (30 classes total, currently running)
+
+Each term requires students to attend **24 out of 30 classes** to be marked as "Cleared". Status values:
+- **Cleared**: Student has attended 24+ classes for the term
+- **Not Cleared**: Term has ended and student did not meet the 24-class requirement
+- **In Progress**: Term is ongoing and student still has opportunity to meet requirement
+
+The Excel file structure has term headers in row 0, with columns for %, Total Classes Attended, Total Class (30), and Attendance Criteria within each term section.
+
 ### Database Schema
 The application uses Drizzle ORM configured for PostgreSQL, though current implementation relies on in-memory storage. The schema in `shared/schema.ts` defines TypeScript/Zod types for:
-- `Student`: Core student record with attendance map
-- `AttendanceData`: Collection of students with metadata
+- `Student`: Core student record with attendance map and optional terms array
+- `TermData`: Term-specific attendance data with status, progress, and requirements
+- `AttendanceData`: Collection of students with metadata and term names
 - `StudentResponse`: API response format with weekly breakdowns
 - `PendingStudent`: Students needing additional attendance
 

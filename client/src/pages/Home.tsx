@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight, Award, Target } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 import type { StudentResponse, CacheStatus, Student, TermData } from "@shared/schema";
 import { Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
