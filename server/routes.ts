@@ -231,7 +231,7 @@ INSTRUCTIONS:
       }
 
       const response = await kimi.chat.completions.create({
-        model: "kimi-k2",
+        model: "kimi-for-coding",
         messages,
         temperature: 0.7,
         max_tokens: 500,
