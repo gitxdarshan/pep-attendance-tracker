@@ -218,7 +218,7 @@ Status: ${weeklyData.status}
 Breakdown: ${weekContext}
 
 INSTRUCTIONS:
-- Reply in the same language the student uses (Hindi, Hinglish, or English)
+- Always reply in English by default. Only switch to Hindi/Hinglish if the student writes in Hindi/Hinglish
 - Keep responses concise and friendly, max 3-4 sentences unless asked for detail
 - Give personalized advice based on their actual data
 - If they ask predictions, calculate based on their patterns

@@ -212,10 +212,10 @@ export function AIChatBot({ rollNo, studentName }: AIChatBotProps) {
   };
 
   const quickQuestions = [
-    "Mera attendance kaisa hai?",
-    "Kya main clear kar paunga?",
-    "Kitne classes miss kar sakta hoon?",
-    "This week ka status?",
+    "How is my attendance?",
+    "Will I be able to clear?",
+    "How many classes can I miss?",
+    "This week's status?",
   ];
 
   if (!rollNo) return null;
