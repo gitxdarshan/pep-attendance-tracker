@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer-core";
 import type { Student, AttendanceData, DayBreakdown, WeeklyData, TermData } from "@shared/schema";
+import { checkAndNotifyNewAttendance, initializePreviousAttendance } from "./push";
 
 const SHAREPOINT_URL = "https://vijaybhoomischool-my.sharepoint.com/:x:/g/personal/rinu_babu_vijaybhoomi_edu_in/EbLMrNHP8GdGvW4Vvs84o0MBMHULieSJmvqcZv-BXgWeVw?e=hatTjx";
 const DOWNLOAD_URL = `${SHAREPOINT_URL}&download=1`;
@@ -362,6 +363,7 @@ class AttendanceCache {
         throw new Error("No students found in Excel file");
       }
 
+      const oldData = this.cache.data;
       this.cache.data = data;
       this.cache.lastFetched = new Date();
       this.cache.error = null;
@@ -370,6 +372,19 @@ class AttendanceCache {
       clearTimeout(timeout);
       
       console.log(`[Scraper] SUCCESS: Loaded ${data.students.length} students`);
+
+      if (oldData) {
+        try {
+          const notified = await checkAndNotifyNewAttendance(data.students);
+          if (notified > 0) {
+            console.log(`[Scraper] Sent ${notified} push notifications for new attendance`);
+          }
+        } catch (pushError: any) {
+          console.error("[Scraper] Push notification error:", pushError?.message);
+        }
+      } else {
+        initializePreviousAttendance(data.students);
+      }
       
       return { 
         success: true, 
