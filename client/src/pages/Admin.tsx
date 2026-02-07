@@ -99,7 +99,7 @@ export default function Admin() {
                 <div>
                   <h2 className="text-lg font-bold">Students Below Requirement</h2>
                   <p className="text-sm text-muted-foreground">
-                    Students who haven't attended minimum 3 out of 5 PEP days this week (Mon-Fri)
+                    Students with less than 3 attendance this week (Mon-Fri, max 3 counted per week)
                   </p>
                 </div>
               </div>
@@ -188,7 +188,7 @@ export default function Admin() {
                           <div className="flex items-center gap-2">
                             <TrendingUp className="w-4 h-4 text-yellow-400" />
                             <span className="font-bold text-lg" data-testid={`text-present-${index}`}>
-                              {student.daysPresent}/5
+                              {student.daysPresent}/3
                             </span>
                           </div>
                           <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium" data-testid={`text-remaining-${index}`}>

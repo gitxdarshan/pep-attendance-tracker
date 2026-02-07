@@ -193,7 +193,8 @@ RULES:
 - PEP requires 24 out of 30 classes per term to be "Cleared"
 - Republic Term started 5 Jan 2026, term end date is NOT fixed - sir extend the spreadsheet, so it can go beyond 30 classes
 - Schedule: 5 PEP days per week (Mon-Fri), Saturday-Sunday holiday
-- Students MUST attend minimum 3 out of 5 days per week (compulsory), can attend up to all 5
+- Out of 5 days, only 3 days of attendance are counted per week (even if student attends all 5, only 3 will be recorded)
+- Students can choose which days to attend, but only 3 attendance entries per week are possible in the system
 - Statuses: P (Present), L (Leave), A (Absent), W (Warning - PEP rule violations like wearing wrong clothes, not following rules)
 - Terms: Festival Term (Oct-Dec, ended), Republic Term (Jan onwards, ONGOING with no fixed end date)
 - "Cleared" = 24+ classes attended, "Not Cleared" = term ended with <24 (only for Festival Term), "In Progress" = ongoing
@@ -211,8 +212,8 @@ Today's Status: ${todayStatus}
 TERM-WISE DATA:
 ${termContext}
 
-THIS WEEK (5 PEP days, minimum 3 compulsory):
-Present: ${weeklyData.daysPresent}/5 days (minimum 3 required)
+THIS WEEK (5 PEP days, max 3 attendance counted):
+Present: ${weeklyData.daysPresent}/3 days counted this week
 Status: ${weeklyData.status}
 Breakdown: ${weekContext}
 
