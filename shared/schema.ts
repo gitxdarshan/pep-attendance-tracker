@@ -48,6 +48,7 @@ export interface StudentResponse {
 export interface WeeklyData {
   daysPresent: number;
   daysRequired: number;
+  totalDays: number;
   status: "Completed" | "Pending";
   remaining: number;
 }
@@ -64,6 +65,7 @@ export interface PendingStudent {
   gender: string;
   school: string;
   daysPresent: number;
+  daysRequired: number;
   daysRemaining: number;
   weeklyBreakdown: DayBreakdown[];
 }

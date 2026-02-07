@@ -1269,7 +1269,7 @@ export default function Home() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-2" data-testid="text-weekly-count">
-                        {studentData.weeklyData.daysPresent}/{studentData.weeklyData.daysRequired} days present
+                        {studentData.weeklyData.daysPresent}/5 days present (min {studentData.weeklyData.daysRequired} required)
                         {studentData.weeklyData.remaining > 0 && (
                           <span className="text-yellow-600 dark:text-yellow-400 font-medium"> · {studentData.weeklyData.remaining} more needed</span>
                         )}

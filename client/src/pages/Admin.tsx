@@ -188,7 +188,7 @@ export default function Admin() {
                           <div className="flex items-center gap-2">
                             <TrendingUp className="w-4 h-4 text-yellow-400" />
                             <span className="font-bold text-lg" data-testid={`text-present-${index}`}>
-                              {student.daysPresent}/3
+                              {student.daysPresent}/5
                             </span>
                           </div>
                           <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium" data-testid={`text-remaining-${index}`}>

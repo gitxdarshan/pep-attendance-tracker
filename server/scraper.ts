@@ -787,14 +787,17 @@ class AttendanceCache {
       });
     }
 
-    const remaining = Math.max(0, 3 - presentCount);
+    const daysRequired = 3;
+    const totalDaysInWeek = 5;
+    const remaining = Math.max(0, daysRequired - presentCount);
     
     return {
       weeklyData: {
         daysPresent: presentCount,
-        daysRequired: 3,
-        status: presentCount >= 3 ? "Completed" : "Pending",
-        remaining
+        daysRequired,
+        status: presentCount >= daysRequired ? "Completed" : "Pending",
+        remaining,
+        totalDays: totalDaysInWeek
       },
       weeklyBreakdown
     };
