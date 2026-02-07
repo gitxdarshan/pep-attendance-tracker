@@ -73,6 +73,7 @@ The application uses Drizzle ORM configured for PostgreSQL, though current imple
 ### Third-Party Services
 - **SharePoint**: External data source for attendance Excel files (Microsoft 365)
 - **Chromium**: Headless browser for web scraping (Puppeteer-core)
+- **Kimi Code API**: AI chatbot using Anthropic-compatible format at `https://api.kimi.com/coding/v1/messages` with `x-api-key` header (NOT OpenAI format). Model: `kimi-for-coding`. Key stored in `KIMI_API_KEY` env var.
 
 ### Database
 - **PostgreSQL**: Configured via `DATABASE_URL` environment variable (Drizzle ORM ready)
@@ -86,3 +87,4 @@ The application uses Drizzle ORM configured for PostgreSQL, though current imple
 ### Environment Variables Required
 - `DATABASE_URL`: PostgreSQL connection string
 - `PUPPETEER_EXECUTABLE_PATH`: Optional path to Chromium binary
+- `KIMI_API_KEY`: Kimi Code API key (sk-kimi-... format, uses Anthropic-compatible endpoint at api.kimi.com/coding/)

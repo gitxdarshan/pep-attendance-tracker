@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { attendanceCache } from "./scraper";
 import type { StudentResponse, PendingStudent } from "@shared/schema";
-import OpenAI from "openai";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -118,10 +117,7 @@ export async function registerRoutes(
     res.json(stats);
   });
 
-  const kimi = new OpenAI({
-    apiKey: process.env.MOONSHOT_API_KEY,
-    baseURL: "https://api.moonshot.cn/v1",
-  });
+  const KIMI_API_URL = "https://api.kimi.com/coding/v1/messages";
 
   const chatRateLimit = new Map<string, number>();
 
@@ -143,7 +139,8 @@ export async function registerRoutes(
     }
     chatRateLimit.set(rollNo, now);
 
-    if (!process.env.MOONSHOT_API_KEY) {
+    const apiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
+    if (!apiKey) {
       return res.status(500).json({ error: "AI service not configured" });
     }
 
@@ -217,35 +214,49 @@ INSTRUCTIONS:
 - Use simple language, they are college students`;
 
     try {
-      const messages: any[] = [
-        { role: "system", content: systemPrompt },
-      ];
+      const anthropicMessages: any[] = [];
 
       if (history && Array.isArray(history)) {
         const validRoles = new Set(["user", "assistant"]);
         for (const h of history.slice(-8)) {
           if (h && validRoles.has(h.role) && typeof h.content === 'string') {
-            messages.push({ role: h.role, content: h.content.slice(0, 1000) });
+            anthropicMessages.push({ role: h.role, content: h.content.slice(0, 1000) });
           }
         }
       }
 
-      const response = await kimi.chat.completions.create({
-        model: "kimi-for-coding",
-        messages,
-        temperature: 0.7,
-        max_tokens: 500,
+      anthropicMessages.push({ role: "user", content: message });
+
+      const response = await fetch(KIMI_API_URL, {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "kimi-for-coding",
+          system: systemPrompt,
+          messages: anthropicMessages,
+          max_tokens: 500,
+        }),
       });
 
-      const reply = response.choices[0]?.message?.content || "Sorry, I couldn't process that.";
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("[AI Chat] API Error:", response.status, JSON.stringify(errorData));
+        if (response.status === 401) {
+          return res.status(500).json({ error: "AI API key is invalid." });
+        }
+        return res.status(500).json({ error: "AI service temporarily unavailable" });
+      }
+
+      const data = await response.json();
+      const reply = data.content?.[0]?.text || "Sorry, I couldn't process that.";
       res.json({ reply });
     } catch (error: any) {
-      console.error("[AI Chat] Error:", error.message, error.status || '');
-      if (error.status === 401) {
-        res.status(500).json({ error: "AI API key is invalid. Please check MOONSHOT_API_KEY." });
-      } else {
-        res.status(500).json({ error: "AI service temporarily unavailable" });
-      }
+      console.error("[AI Chat] Error:", error.message);
+      res.status(500).json({ error: "AI service temporarily unavailable" });
     }
   });
 

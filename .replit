@@ -45,3 +45,4 @@ integrations = ["github:1.0.0"]
 [userenv]
 
 [userenv.shared]
+KIMI_API_KEY = "sk-kimi-vNdGeJV3Psp57KkOYVEMmDBzVydFf71zz5V3fxTHJSh3LuWzfL2wnluUOdH6Gwmm"
