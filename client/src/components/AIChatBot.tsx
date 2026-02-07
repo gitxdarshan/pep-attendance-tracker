@@ -10,6 +10,126 @@ interface ChatMessage {
   content: string;
 }
 
+function renderMarkdown(text: string) {
+  const lines = text.split('\n');
+  const elements: JSX.Element[] = [];
+  let listItems: string[] = [];
+  let listType: 'ul' | 'ol' | null = null;
+  let key = 0;
+
+  const flushList = () => {
+    if (listItems.length > 0 && listType) {
+      const Tag = listType;
+      elements.push(
+        <Tag key={key++} className={`${listType === 'ul' ? 'list-disc' : 'list-decimal'} pl-4 my-1 space-y-0.5`}>
+          {listItems.map((item, i) => (
+            <li key={i} className="text-sm leading-relaxed">{renderInline(item)}</li>
+          ))}
+        </Tag>
+      );
+      listItems = [];
+      listType = null;
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    const ulMatch = line.match(/^[-*•]\s+(.+)/);
+    const olMatch = line.match(/^\d+[.)]\s+(.+)/);
+
+    if (ulMatch) {
+      if (listType === 'ol') flushList();
+      listType = 'ul';
+      listItems.push(ulMatch[1]);
+      continue;
+    }
+    if (olMatch) {
+      if (listType === 'ul') flushList();
+      listType = 'ol';
+      listItems.push(olMatch[1]);
+      continue;
+    }
+
+    flushList();
+
+    if (line.trim() === '') {
+      elements.push(<div key={key++} className="h-1.5" />);
+      continue;
+    }
+
+    const h3Match = line.match(/^###\s+(.+)/);
+    if (h3Match) {
+      elements.push(<p key={key++} className="font-semibold text-sm mt-1.5 mb-0.5">{renderInline(h3Match[1])}</p>);
+      continue;
+    }
+    const h2Match = line.match(/^##\s+(.+)/);
+    if (h2Match) {
+      elements.push(<p key={key++} className="font-bold text-sm mt-2 mb-0.5">{renderInline(h2Match[1])}</p>);
+      continue;
+    }
+    const h1Match = line.match(/^#\s+(.+)/);
+    if (h1Match) {
+      elements.push(<p key={key++} className="font-bold text-[15px] mt-2 mb-1">{renderInline(h1Match[1])}</p>);
+      continue;
+    }
+
+    elements.push(<p key={key++} className="text-sm leading-relaxed">{renderInline(line)}</p>);
+  }
+
+  flushList();
+  return <>{elements}</>;
+}
+
+function renderInline(text: string): (string | JSX.Element)[] {
+  const parts: (string | JSX.Element)[] = [];
+  let remaining = text;
+  let k = 0;
+
+  while (remaining.length > 0) {
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+    const italicMatch = remaining.match(/(?<!\*)\*([^*]+?)\*(?!\*)/);
+    const codeMatch = remaining.match(/`([^`]+)`/);
+
+    let firstMatch: { index: number; length: number; type: string; content: string } | null = null;
+
+    if (boldMatch && boldMatch.index !== undefined) {
+      firstMatch = { index: boldMatch.index, length: boldMatch[0].length, type: 'bold', content: boldMatch[1] };
+    }
+    if (italicMatch && italicMatch.index !== undefined) {
+      if (!firstMatch || italicMatch.index < firstMatch.index) {
+        firstMatch = { index: italicMatch.index, length: italicMatch[0].length, type: 'italic', content: italicMatch[1] };
+      }
+    }
+    if (codeMatch && codeMatch.index !== undefined) {
+      if (!firstMatch || codeMatch.index < firstMatch.index) {
+        firstMatch = { index: codeMatch.index, length: codeMatch[0].length, type: 'code', content: codeMatch[1] };
+      }
+    }
+
+    if (!firstMatch) {
+      parts.push(remaining);
+      break;
+    }
+
+    if (firstMatch.index > 0) {
+      parts.push(remaining.substring(0, firstMatch.index));
+    }
+
+    if (firstMatch.type === 'bold') {
+      parts.push(<strong key={k++} className="font-semibold">{firstMatch.content}</strong>);
+    } else if (firstMatch.type === 'italic') {
+      parts.push(<em key={k++}>{firstMatch.content}</em>);
+    } else if (firstMatch.type === 'code') {
+      parts.push(<code key={k++} className="px-1 py-0.5 rounded bg-foreground/10 text-xs font-mono">{firstMatch.content}</code>);
+    }
+
+    remaining = remaining.substring(firstMatch.index + firstMatch.length);
+  }
+
+  return parts;
+}
+
 interface AIChatBotProps {
   rollNo: string | null;
   studentName?: string;
@@ -162,14 +282,14 @@ export function AIChatBot({ rollNo, studentName }: AIChatBotProps) {
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap ${
+                  className={`max-w-[80%] px-3 py-2 rounded-2xl ${
                     msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
+                      ? "bg-primary text-primary-foreground rounded-br-md text-sm whitespace-pre-wrap"
                       : "bg-muted rounded-bl-md"
                   }`}
                   data-testid={`chat-message-${msg.role}-${i}`}
                 >
-                  {msg.content}
+                  {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
                 </div>
                 {msg.role === "user" && (
                   <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-1">
