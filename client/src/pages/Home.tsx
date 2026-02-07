@@ -150,7 +150,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
           Detailed attendance records for each term
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-3 sm:p-6 space-y-4">
         {terms.map((term, termIndex) => {
           const monthlyData = getMonthlyDataForTerm(term.attendance);
           const presentCount = Object.values(term.attendance).filter(s => s.toUpperCase() === "P").length;
@@ -162,19 +162,19 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
             <div key={termIndex} className="border rounded-xl overflow-hidden" data-testid={`term-history-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
               <button
                 onClick={() => toggleTerm(term.termName)}
-                className="w-full flex items-center justify-between p-4 hover-elevate transition-all duration-200 bg-muted/30"
+                className="w-full flex items-center justify-between p-3 sm:p-4 hover-elevate transition-all duration-200 bg-muted/30"
                 data-testid={`button-term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}
               >
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Award className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                  <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 shrink-0">
+                    <Award className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-lg">{term.termName}</span>
+                  <div className="text-left min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span className="font-bold text-base sm:text-lg">{term.termName}</span>
                       {getTermStatusBadge(term.status)}
                     </div>
-                    <div className="flex flex-wrap gap-3 text-xs mt-1">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 text-xs mt-1">
                       <span className="font-medium">{term.attendedClasses}/{term.totalClasses} classes</span>
                       <span className="text-violet-600 dark:text-violet-400 font-medium">{presentCount} P</span>
                       <span className="text-yellow-600 dark:text-yellow-400 font-medium">{leaveCount} L</span>
@@ -189,7 +189,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
               </button>
 
               {expandedTerms.has(term.termName) && (
-                <div className="border-t p-4 space-y-2 bg-background">
+                <div className="border-t p-2 sm:p-4 space-y-2 bg-background">
                   {monthlyData.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4">No attendance records for this term</p>
                   ) : (
@@ -197,10 +197,10 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
                       <div key={key} className="border rounded-lg overflow-hidden">
                         <button
                           onClick={() => toggleMonth(`${term.termName}-${key}`)}
-                          className="w-full flex items-center justify-between p-3 hover-elevate transition-all duration-200"
+                          className="w-full flex items-center justify-between p-2 sm:p-3 hover-elevate transition-all duration-200"
                           data-testid={`button-month-${term.termName.replace(/\s+/g, '-').toLowerCase()}-${key}`}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3">
                             <div className="p-1.5 rounded-md bg-muted">
                               <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
                             </div>
@@ -220,14 +220,14 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
                         </button>
                         
                         {expandedMonths.has(`${term.termName}-${key}`) && (
-                          <div className="border-t p-3 bg-muted/20">
-                            <div className="grid grid-cols-7 gap-1">
+                          <div className="border-t p-2 sm:p-3 bg-muted/20">
+                            <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
                               {days.map((day, i) => (
                                 <div
                                   key={i}
-                                  className="text-center p-1.5 rounded-md bg-background border hover:border-primary/30 transition-colors"
+                                  className="text-center p-1 sm:p-1.5 rounded-md bg-background border hover:border-primary/30 transition-colors"
                                 >
-                                  <p className="text-xs text-muted-foreground mb-0.5 font-medium">{day.dayOfMonth}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground mb-0.5 font-medium">{day.dayOfMonth}</p>
                                   {getStatusBadge(day.status)}
                                 </div>
                               ))}
@@ -289,33 +289,33 @@ function TermProgress({ terms }: { terms: TermData[] }) {
           <span>Requirement: 24 out of 30 classes per term to be marked as Cleared</span>
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-3 sm:p-6 space-y-4">
         {terms.map((term, index) => {
           const styles = getStatusStyles(term.status);
           const progressPercent = Math.min((term.attendedClasses / term.requiredClasses) * 100, 100);
           
           return (
-            <div key={index} className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${styles.bg} p-5 border`} data-testid={`term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-background/50">
-                    <Award className="w-5 h-5 text-primary" />
+            <div key={index} className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${styles.bg} p-3 sm:p-5 border`} data-testid={`term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
+              <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-4 mb-4">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="p-1.5 sm:p-2 rounded-lg bg-background/50 shrink-0">
+                    <Award className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-lg">{term.termName}</h4>
-                    <p className="text-sm text-muted-foreground">
+                  <div className="min-w-0">
+                    <h4 className="font-semibold text-base sm:text-lg">{term.termName}</h4>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {term.attendedClasses} / {term.totalClasses} classes attended
                     </p>
                   </div>
                 </div>
-                <Badge className={`${styles.badge} font-semibold`} data-testid={`badge-status-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
+                <Badge className={`${styles.badge} font-semibold shrink-0`} data-testid={`badge-status-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
                   {styles.icon}
                   <span className="ml-1.5">{term.status}</span>
                 </Badge>
               </div>
               
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground font-medium">Progress to requirement ({term.requiredClasses} classes)</span>
                   <span className="font-bold">{Math.round(progressPercent)}%</span>
                 </div>
@@ -808,16 +808,16 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
       <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <div className="relative">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
-                  <GraduationCap className="w-6 h-6 text-primary-foreground" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
+                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-violet-500 border-2 border-background" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                   PEP Attendance
                 </h1>
                 <p className="text-xs text-muted-foreground font-medium">UG 2025 Batch Lifestyle</p>
@@ -845,8 +845,8 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
-        <div className="max-w-3xl mx-auto space-y-6">
+      <main className="container mx-auto px-4 py-4 sm:py-6">
+        <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
           {cacheStatus && (
             <div className={`flex items-center justify-between text-sm rounded-xl px-4 py-3 border transition-all ${cacheStatus.isDemoData ? 'bg-yellow-400/10 text-yellow-700 dark:text-yellow-300 border-yellow-400/20' : 'bg-muted/50 text-muted-foreground border-transparent'}`}>
               <span data-testid="text-cache-status" className="flex items-center gap-2">
@@ -889,7 +889,7 @@ export default function Home() {
                 Search by Roll Number or Student Name
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <form onSubmit={handleSearch} className="space-y-4">
                 <div className="flex gap-2">
                   <Button
@@ -1035,12 +1035,12 @@ export default function Home() {
               )}
               <Card className="overflow-hidden" id="student-report">
                 <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 print:hidden" />
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="relative print:hidden">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                          <User className="w-8 h-8 text-primary" />
+                <CardHeader className="pb-4 px-3 sm:px-6">
+                  <div className="flex items-start justify-between gap-2 sm:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                      <div className="relative print:hidden shrink-0">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                          <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                         </div>
                         <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-background flex items-center justify-center ${studentData.todayStatus === 'Present' ? 'bg-violet-500' : studentData.todayStatus === 'Leave' ? 'bg-yellow-400' : studentData.todayStatus === 'Absent' ? 'bg-rose-500' : studentData.todayStatus === 'Warning' ? 'bg-orange-500' : 'bg-muted'}`}>
                           {studentData.todayStatus === 'Present' && <CheckCircle2 className="w-3 h-3 text-white" />}
@@ -1049,8 +1049,8 @@ export default function Home() {
                           {studentData.todayStatus === 'Warning' && <AlertCircle className="w-3 h-3 text-white" />}
                         </div>
                       </div>
-                      <div>
-                        <CardTitle className="text-xl" data-testid="text-student-name">
+                      <div className="min-w-0">
+                        <CardTitle className="text-base sm:text-xl" data-testid="text-student-name">
                           {studentData.student.studentName}
                         </CardTitle>
                         <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -1124,9 +1124,9 @@ export default function Home() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-6 pb-6">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-5 border">
+                <CardContent className="space-y-4 sm:space-y-6 pb-4 sm:pb-6 px-3 sm:px-6">
+                  <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-3 sm:p-5 border">
                       <div className="absolute top-3 right-3 opacity-5">
                         <Calendar className="w-16 h-16" />
                       </div>
@@ -1140,7 +1140,7 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-5 border">
+                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-3 sm:p-5 border">
                       <div className="absolute top-3 right-3 opacity-5">
                         <TrendingUp className="w-16 h-16" />
                       </div>
@@ -1169,15 +1169,15 @@ export default function Home() {
                       <CalendarDays className="w-4 h-4 text-muted-foreground" />
                       This Week
                     </h4>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="grid grid-cols-5 gap-1 sm:gap-2">
                       {studentData.weeklyBreakdown.map((day, i) => (
                         <div
                           key={i}
-                          className="text-center p-3 rounded-xl bg-muted/30 border hover:border-primary/30 transition-colors"
+                          className="text-center p-1.5 sm:p-3 rounded-xl bg-muted/30 border hover:border-primary/30 transition-colors"
                           data-testid={`day-${day.day.toLowerCase()}`}
                         >
-                          <p className="text-xs font-bold text-muted-foreground">{day.day}</p>
-                          <p className="text-xs text-muted-foreground/70 mb-2">{day.date}</p>
+                          <p className="text-[10px] sm:text-xs font-bold text-muted-foreground">{day.day}</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground/70 mb-1 sm:mb-2">{day.date}</p>
                           {getStatusBadge(day.status)}
                         </div>
                       ))}
