@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -219,19 +220,18 @@ export function AIChatBot({ rollNo, studentName }: AIChatBotProps) {
 
   if (!rollNo) return null;
 
-  return (
+  return createPortal(
     <>
-      <Button
-        size="icon"
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg"
+        className="fixed bottom-5 right-5 z-[9999] w-12 h-12 rounded-full shadow-xl bg-primary text-primary-foreground flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         data-testid="button-chat-toggle"
       >
         {isOpen ? <X className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
-      </Button>
+      </button>
 
       {isOpen && (
-        <Card className="fixed bottom-20 right-4 z-50 w-[calc(100vw-2rem)] max-w-sm flex flex-col shadow-2xl border overflow-visible"
+        <Card className="fixed bottom-20 right-5 z-[9999] w-[calc(100vw-2.5rem)] max-w-sm flex flex-col shadow-2xl border overflow-visible"
           style={{ height: "min(70vh, 500px)" }}
         >
           <div className="flex items-center gap-2 p-3 border-b bg-primary/5 rounded-t-md">
@@ -337,6 +337,7 @@ export function AIChatBot({ rollNo, studentName }: AIChatBotProps) {
           </div>
         </Card>
       )}
-    </>
+    </>,
+    document.body
   );
 }
