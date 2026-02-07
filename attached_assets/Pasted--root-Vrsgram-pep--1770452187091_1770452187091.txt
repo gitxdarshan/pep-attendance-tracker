@@ -1,0 +1,71 @@
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@Vrsgram:~/pep-attendance-tracker# # Check disk usage
+df -h
+
+# Clean npm cache
+npm cache clean --force
+
+# Remove old PM2 logs
+pm2 flush
+
+# Clean apt cache
+sudo apt clean
+
+# Remove old snap versions
+sudo snap list --all | while read snapname ver rev tracking publisher notes; do if [[ "$notes" == *disabled* ]]; then sudo snap remove "$snapname" --revision="$rev"; fi; done
+
+# Check space again
+df -h
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           388M   46M  343M  12% /run
+/dev/vda1        20G   20G     0 100% /
+tmpfs           1.9G     0  1.9G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda15      105M  6.1M   99M   6% /boot/efi
+tmpfs           388M  8.0K  388M   1% /run/user/0
+tmpfs           1.0G     0  1.0G   0% /root/Itachimusicc/downloads
+npm error code ENOSPC
+npm error syscall write
+npm error errno -28
+npm error nospc ENOSPC: no space left on device, write
+npm error nospc There appears to be insufficient space on your system to finish.
+npm error nospc Clear up some disk space and try again.
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-07T08_15_49_374Z-debug-0.log
+[PM2] Spawning PM2 daemon with pm2_home=/root/.pm2
+[PM2] PM2 Successfully daemonized
+[PM2] Flushing /root/.pm2/pm2.log
+[PM2] Logs flushed
+core20 (revision 2571) removed
+core22 (revision 2216) removed
+core24 (revision 1267) removed
+cups (revision 1138) removed
+gnome-46-2404 (revision 145) removed
+lxd (revision 31333) removed
+snapd (revision 25577) removed
+Filesystem      Size  Used Avail Use% Mounted on
+tmpfs           388M   41M  348M  11% /run
+/dev/vda1        20G   19G  879M  96% /
+tmpfs           1.9G     0  1.9G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+/dev/vda15      105M  6.1M   99M   6% /boot/efi
+tmpfs           388M  8.0K  388M   1% /run/user/0
+tmpfs           1.0G     0  1.0G   0% /root/Itachimusicc/downloads
+root@Vrsgram:~/pep-attendance-tracker# cd ~/pep-attendance-tracker
+npm install
+npm run build
+pm2 restart pep-tracker
+npm error code ENOTEMPTY
+npm error syscall rename
+npm error path /root/pep-attendance-tracker/node_modules/caniuse-lite
+npm error dest /root/pep-attendance-tracker/node_modules/.caniuse-lite-7jzUDPGp
+npm error errno -39
+npm error ENOTEMPTY: directory not empty, rename '/root/pep-attendance-tracker/node_modules/caniuse-lite' -> '/root/pep-attendance-tracker/node_modules/.caniuse-lite-7jzUDPGp'
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-07T08_16_08_480Z-debug-0.log
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+sh: 1: tsx: not found
+Use --update-env to update environment variables
+[PM2][ERROR] Process or Namespace pep-tracker not found
+root@Vrsgram:~/pep-attendance-tracker#
