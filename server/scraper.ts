@@ -582,9 +582,11 @@ class AttendanceCache {
         }
 
         let status: "Cleared" | "Not Cleared" | "In Progress";
-        if (criteriaValue.includes('cleared') && !criteriaValue.includes('not')) {
+        if (attended >= REQUIRED_CLASSES) {
           status = "Cleared";
-        } else if (attended >= REQUIRED_CLASSES) {
+        } else if (isRepublicTerm) {
+          status = "In Progress";
+        } else if (criteriaValue.includes('cleared') && !criteriaValue.includes('not')) {
           status = "Cleared";
         } else if (criteriaValue.includes('not') && criteriaValue.includes('cleared')) {
           status = "Not Cleared";
