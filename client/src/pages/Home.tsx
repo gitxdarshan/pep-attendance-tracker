@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, FileText, Download, ChevronRight, ChevronLeft, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
+import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, TrendingUp, CalendarDays, Users, FileSpreadsheet, FileText, Download, ChevronRight, ChevronLeft, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
 import type { StudentResponse, CacheStatus, Student, TermData } from "@shared/schema";
 import { Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -926,12 +926,12 @@ export default function Home() {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-4">
-              <div className="relative">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
-                  <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-violet-500 border-2 border-background" />
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="Vijaybhoomi University" 
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-contain"
+                data-testid="img-logo"
+              />
               <div>
                 <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                   PEP Attendance
