@@ -12,6 +12,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { AIChatBot } from "@/components/AIChatBot";
 
 interface SearchResult {
   students: Student[];
@@ -1327,6 +1328,11 @@ export default function Home() {
           )}
         </div>
       </main>
+
+      <AIChatBot 
+        rollNo={selectedRollNo} 
+        studentName={studentData?.student?.studentName}
+      />
     </div>
   );
 }
