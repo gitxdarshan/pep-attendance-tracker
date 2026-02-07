@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { attendanceCache } from "./scraper";
 import type { StudentResponse, PendingStudent } from "@shared/schema";
+import { DateTime } from "luxon";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -187,11 +188,33 @@ export async function registerRoutes(
 
     const weekContext = weeklyBreakdown.map(d => `${d.day} ${d.date}: ${d.status}`).join(', ');
 
+    const istNow = DateTime.now().setZone("Asia/Kolkata");
+    const currentDay = istNow.toFormat("EEEE");
+    const currentDate = istNow.toFormat("dd MMMM yyyy");
+    const currentTime = istNow.toFormat("hh:mm a");
+    const isWeekend = istNow.weekday >= 6;
+    const isPEPDay = !isWeekend;
+
+    const upcomingDays: string[] = [];
+    let nextDay = istNow.plus({ days: 1 });
+    for (let i = 0; i < 5; i++) {
+      if (nextDay.weekday <= 5) {
+        upcomingDays.push(nextDay.toFormat("EEEE, dd MMM"));
+      }
+      nextDay = nextDay.plus({ days: 1 });
+    }
+
     const systemPrompt = `You are PEP Attendance Assistant for Vijaybhoomi University. You help students understand their Physical Education Program (PEP) attendance.
+
+CURRENT DATE & TIME (Indian Standard Time):
+- Date: ${currentDate} (${currentDay})
+- Time: ${currentTime} IST
+- Today is ${isPEPDay ? "a PEP day (Monday-Friday)" : "a holiday (Weekend - no PEP)"}
+- Upcoming PEP days: ${upcomingDays.join(", ")}
 
 RULES:
 - PEP requires 24 out of 30 classes per term to be "Cleared"
-- Republic Term started 5 Jan 2026, term end date is NOT fixed - sir extend the spreadsheet, so it can go beyond 30 classes
+- Republic Term started 5 Jan 2026, term end date is NOT fixed - sir extends the spreadsheet, so it can go beyond 30 classes
 - Schedule: 5 PEP days per week (Mon-Fri), Saturday-Sunday holiday
 - Out of 5 days, only 3 days of attendance are counted per week (even if student attends all 5, only 3 will be recorded)
 - Students can choose which days to attend, but only 3 attendance entries per week are possible in the system
@@ -201,6 +224,7 @@ RULES:
 - Republic Term is ALWAYS "In Progress" until student attends 24+ classes (it NEVER auto-ends)
 - NEVER say Republic Term has ended or will end - the end date is unknown
 - When predicting, assume Republic Term will continue and student will keep getting chances to attend
+- Use the current date/time to give time-aware responses (e.g. "today is Monday so you have PEP", "this week you still have 2 PEP days left", "it's weekend so no PEP tomorrow")
 
 STUDENT DATA:
 Name: ${student.studentName}
@@ -223,7 +247,10 @@ INSTRUCTIONS:
 - Give personalized advice based on their actual data
 - If they ask predictions, calculate based on their patterns
 - Be encouraging but honest about their status
-- Use simple language, they are college students`;
+- Use simple language, they are college students
+- When student asks about schedule, upcoming classes, or "when is next PEP", use the current date/time info to give accurate answers
+- If it's a weekend, let them know next PEP is on Monday
+- If student asks "aaj PEP hai?", check the current day and answer accordingly`;
 
     try {
       const anthropicMessages: any[] = [];
