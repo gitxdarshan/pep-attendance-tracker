@@ -1,0 +1,73 @@
+tmpfs           1.0G     0  1.0G   0% /root/Itachimusicc/downloads
+root@Vrsgram:~/pep-attendance-tracker# cd ~/pep-attendance-tracker
+npm install
+npm run build
+pm2 restart pep-tracker
+npm error code ENOTEMPTY
+npm error syscall rename
+npm error path /root/pep-attendance-tracker/node_modules/caniuse-lite
+npm error dest /root/pep-attendance-tracker/node_modules/.caniuse-lite-7jzUDPGp
+npm error errno -39
+npm error ENOTEMPTY: directory not empty, rename '/root/pep-attendance-tracker/node_modules/caniuse-lite' -> '/root/pep-attendance-tracker/node_modules/.caniuse-lite-7jzUDPGp'
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-07T08_16_08_480Z-debug-0.log
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+sh: 1: tsx: not found
+Use --update-env to update environment variables
+[PM2][ERROR] Process or Namespace pep-tracker not found
+root@Vrsgram:~/pep-attendance-tracker# cd ~/pep-attendance-tracker
+rm -rf node_modules
+npm install
+npm run build
+pm2 start dist/index.cjs --name pep-tracker
+
+added 618 packages, and audited 619 packages in 11s
+
+84 packages are looking for funding
+  run `npm fund` for details
+
+3 vulnerabilities (1 moderate, 2 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+
+> rest-express@1.0.0 build
+> tsx script/build.ts
+
+building client...
+vite v7.3.0 building client environment for production...
+transforming (4) src/App.tsx
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1956 modules transformed.
+../dist/public/index.html                              3.02 kB │ gzip:   1.07 kB
+../dist/public/assets/index-CqpnvqIB.css              83.43 kB │ gzip:  13.59 kB
+../dist/public/assets/purify.es-Bzr520pe.js           22.45 kB │ gzip:   8.63 kB
+../dist/public/assets/index.es-DchJ5lGz.js           158.55 kB │ gzip:  52.90 kB
+../dist/public/assets/html2canvas.esm-DXEQVQnt.js    201.04 kB │ gzip:  47.43 kB
+../dist/public/assets/index-AIcGCXqZ.js            1,061.86 kB │ gzip: 342.23 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 9.92s
+building server...
+
+  dist/index.cjs  2.2mb ⚠️
+
+⚡ Done in 238ms
+[PM2] Starting /root/pep-attendance-tracker/dist/index.cjs in fork_mode (1 instance)
+[PM2] Done.
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ pep-tracker        │ fork     │ 0    │ online    │ 0%       │ 53.6mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@Vrsgram:~/pep-attendance-tracker#
