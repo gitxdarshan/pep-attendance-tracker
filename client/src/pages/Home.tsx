@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, Printer, FileText, Download, ChevronRight, ChevronLeft, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
+import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, FileText, Download, ChevronRight, ChevronLeft, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
 import type { StudentResponse, CacheStatus, Student, TermData } from "@shared/schema";
 import { Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -919,9 +919,6 @@ export default function Home() {
     doc.save(`${data.student.studentName.replace(/\s+/g, "_")}_PEP_Report.pdf`);
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
@@ -1153,11 +1150,11 @@ export default function Home() {
                 </Button>
               )}
               <Card className="overflow-hidden" id="student-report">
-                <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 print:hidden" />
+                <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 " />
                 <CardHeader className="pb-4 px-3 sm:px-6">
                   <div className="flex items-start justify-between gap-2 sm:gap-4">
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                      <div className="relative print:hidden shrink-0">
+                      <div className="relative  shrink-0">
                         <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
                           <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                         </div>
@@ -1185,7 +1182,7 @@ export default function Home() {
                         </div>
                       </div>
                     </div>
-                    <div className="print:hidden flex items-center gap-2">
+                    <div className=" flex items-center gap-2">
                       <Button
                         variant={isRemembered ? "default" : "outline"}
                         size="sm"
@@ -1233,10 +1230,6 @@ export default function Home() {
                           <DropdownMenuItem onClick={() => handleExportPDF(studentData)} data-testid="button-export-pdf">
                             <FileText className="w-4 h-4 mr-2" />
                             PDF
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handlePrint()} data-testid="button-print">
-                            <Printer className="w-4 h-4 mr-2" />
-                            Print
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
