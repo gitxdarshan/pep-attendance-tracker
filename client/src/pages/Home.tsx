@@ -716,88 +716,207 @@ export default function Home() {
     }
   };
 
-  const handleExportExcel = (data: StudentResponse) => {
-    const attendance = data.student.attendance;
-    const rows: { Date: string; Day: string; Status: string }[] = [];
-    
-    Object.entries(attendance)
-      .sort((a, b) => {
-        const parseDate = (d: string) => {
-          const [m, day, y] = d.split("/").map(Number);
-          return new Date(y, m - 1, day).getTime();
-        };
-        return parseDate(b[0]) - parseDate(a[0]);
-      })
-      .forEach(([dateStr, status]) => {
-        const [m, d, y] = dateStr.split("/").map(Number);
-        const date = new Date(y, m - 1, d);
-        const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
-        const statusText = status.toUpperCase() === "P" ? "Present" : 
-                          status.toUpperCase() === "L" ? "Leave" : 
-                          status.toUpperCase() === "A" ? "Absent" : "Not Marked";
-        rows.push({ Date: dateStr, Day: dayName, Status: statusText });
-      });
+  const getStatusText = (s: string) => {
+    const u = s.toUpperCase();
+    if (u === "P") return "Present";
+    if (u === "L") return "Leave";
+    if (u === "A") return "Absent";
+    if (u === "W") return "Warning";
+    return "Not Marked";
+  };
 
-    const ws = XLSX.utils.json_to_sheet(rows);
+  const parseDateSort = (d: string) => {
+    const [m, day, y] = d.split("/").map(Number);
+    return new Date(y, m - 1, day).getTime();
+  };
+
+  const getDayName = (dateStr: string) => {
+    const [m, d, y] = dateStr.split("/").map(Number);
+    return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][new Date(y, m - 1, d).getDay()];
+  };
+
+  const handleExportExcel = (data: StudentResponse) => {
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-    
-    ws["!cols"] = [{ wch: 12 }, { wch: 8 }, { wch: 12 }];
-    
-    const fileName = `${data.student.studentName.replace(/\s+/g, "_")}_Attendance.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    const terms = data.student.terms || [];
+
+    const summaryRows: Record<string, string | number>[] = [
+      { "Field": "Student Name", "Value": data.student.studentName },
+      { "Field": "Roll No", "Value": data.student.rollNo },
+      { "Field": "School", "Value": data.student.school },
+      { "Field": "Gender", "Value": data.student.gender },
+      { "Field": "", "Value": "" },
+    ];
+
+    terms.forEach(term => {
+      const p = Object.values(term.attendance).filter(s => s.toUpperCase() === "P").length;
+      const l = Object.values(term.attendance).filter(s => s.toUpperCase() === "L").length;
+      const a = Object.values(term.attendance).filter(s => s.toUpperCase() === "A").length;
+      const w = Object.values(term.attendance).filter(s => s.toUpperCase() === "W").length;
+      summaryRows.push(
+        { "Field": term.termName, "Value": term.status },
+        { "Field": "Attended", "Value": `${term.attendedClasses} / ${term.totalClasses}` },
+        { "Field": "Present", "Value": p },
+        { "Field": "Leave", "Value": l },
+        { "Field": "Absent", "Value": a },
+        { "Field": "Warning", "Value": w },
+        { "Field": "Remaining to Clear", "Value": term.remaining },
+        { "Field": "", "Value": "" },
+      );
+    });
+
+    const summaryWs = XLSX.utils.json_to_sheet(summaryRows);
+    summaryWs["!cols"] = [{ wch: 20 }, { wch: 25 }];
+    XLSX.utils.book_append_sheet(wb, summaryWs, "Summary");
+
+    terms.forEach(term => {
+      const rows = Object.entries(term.attendance)
+        .sort((a, b) => parseDateSort(a[0]) - parseDateSort(b[0]))
+        .map(([dateStr, status]) => ({
+          "Date": dateStr,
+          "Day": getDayName(dateStr),
+          "Status": getStatusText(status),
+          "Code": status.toUpperCase()
+        }));
+
+      if (rows.length > 0) {
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws["!cols"] = [{ wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 6 }];
+        const sheetName = term.termName.substring(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      }
+    });
+
+    if (terms.length === 0) {
+      const rows = Object.entries(data.student.attendance)
+        .sort((a, b) => parseDateSort(b[0]) - parseDateSort(a[0]))
+        .map(([dateStr, status]) => ({
+          "Date": dateStr, "Day": getDayName(dateStr),
+          "Status": getStatusText(status), "Code": status.toUpperCase()
+        }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [{ wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 6 }];
+      XLSX.utils.book_append_sheet(wb, ws, "Attendance");
+    }
+
+    XLSX.writeFile(wb, `${data.student.studentName.replace(/\s+/g, "_")}_Attendance.xlsx`);
   };
 
   const handleExportPDF = (data: StudentResponse) => {
     const doc = new jsPDF();
-    const attendance = data.student.attendance;
-    
-    doc.setFontSize(18);
-    doc.text("Attendance Report", 14, 22);
-    
-    doc.setFontSize(12);
-    doc.text(`Student: ${data.student.studentName}`, 14, 35);
-    doc.text(`Roll No: ${data.student.rollNo}`, 14, 42);
-    doc.text(`School: ${data.student.school}`, 14, 49);
-    doc.text(`Gender: ${data.student.gender}`, 14, 56);
-    
-    const totalPresent = Object.values(attendance).filter(s => s.toUpperCase() === "P").length;
-    const totalLeave = Object.values(attendance).filter(s => s.toUpperCase() === "L").length;
-    const totalAbsent = Object.values(attendance).filter(s => s.toUpperCase() === "A").length;
-    const total = totalPresent + totalLeave + totalAbsent;
-    const rate = total > 0 ? Math.round((totalPresent / total) * 100) : 0;
-    
-    doc.text(`Present: ${totalPresent} | Leave: ${totalLeave} | Absent: ${totalAbsent} | Rate: ${rate}%`, 14, 66);
-    
-    const rows = Object.entries(attendance)
-      .sort((a, b) => {
-        const parseDate = (d: string) => {
-          const [m, day, y] = d.split("/").map(Number);
-          return new Date(y, m - 1, day).getTime();
-        };
-        return parseDate(b[0]) - parseDate(a[0]);
-      })
-      .map(([dateStr, status]) => {
-        const [m, d, y] = dateStr.split("/").map(Number);
-        const date = new Date(y, m - 1, d);
-        const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][date.getDay()];
-        const statusText = status.toUpperCase() === "P" ? "Present" : 
-                          status.toUpperCase() === "L" ? "Leave" : 
-                          status.toUpperCase() === "A" ? "Absent" : "Not Marked";
-        return [dateStr, dayName, statusText];
+    const terms = data.student.terms || [];
+
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("PEP Attendance Report", 14, 20);
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Student: ${data.student.studentName}`, 14, 32);
+    doc.text(`Roll No: ${data.student.rollNo}`, 14, 38);
+    doc.text(`School: ${data.student.school}`, 14, 44);
+    doc.text(`Generated: ${new Date().toLocaleDateString("en-IN")}`, 14, 50);
+
+    let yPos = 60;
+
+    if (terms.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("Term-wise Summary", 14, yPos);
+      yPos += 4;
+
+      const termSummaryRows = terms.map(term => {
+        const p = Object.values(term.attendance).filter(s => s.toUpperCase() === "P").length;
+        const l = Object.values(term.attendance).filter(s => s.toUpperCase() === "L").length;
+        const a = Object.values(term.attendance).filter(s => s.toUpperCase() === "A").length;
+        const w = Object.values(term.attendance).filter(s => s.toUpperCase() === "W").length;
+        return [
+          term.termName,
+          term.status,
+          `${term.attendedClasses} / ${term.totalClasses}`,
+          String(p), String(l), String(a), String(w),
+          term.remaining > 0 ? String(term.remaining) : "-"
+        ];
       });
-    
-    autoTable(doc, {
-      head: [["Date", "Day", "Status"]],
-      body: rows,
-      startY: 75,
-      theme: "grid",
-      headStyles: { fillColor: [34, 139, 34] },
-      alternateRowStyles: { fillColor: [245, 245, 245] },
-    });
-    
-    const fileName = `${data.student.studentName.replace(/\s+/g, "_")}_Attendance.pdf`;
-    doc.save(fileName);
+
+      autoTable(doc, {
+        head: [["Term", "Status", "Attended", "P", "L", "A", "W", "Remaining"]],
+        body: termSummaryRows,
+        startY: yPos,
+        theme: "grid",
+        headStyles: { fillColor: [99, 102, 241], fontSize: 9 },
+        bodyStyles: { fontSize: 9 },
+        columnStyles: {
+          1: { fontStyle: "bold" },
+        },
+        didParseCell: (hookData: any) => {
+          if (hookData.section === "body" && hookData.column.index === 1) {
+            const val = hookData.cell.raw;
+            if (val === "Cleared") hookData.cell.styles.textColor = [16, 185, 129];
+            else if (val === "Not Cleared") hookData.cell.styles.textColor = [239, 68, 68];
+            else hookData.cell.styles.textColor = [245, 158, 11];
+          }
+        }
+      });
+
+      yPos = (doc as any).lastAutoTable.finalY + 12;
+
+      terms.forEach(term => {
+        const termRows = Object.entries(term.attendance)
+          .sort((a, b) => parseDateSort(a[0]) - parseDateSort(b[0]))
+          .map(([dateStr, status]) => [dateStr, getDayName(dateStr), getStatusText(status)]);
+
+        if (termRows.length === 0) return;
+
+        if (yPos > 250) {
+          doc.addPage();
+          yPos = 20;
+        }
+
+        doc.setFontSize(13);
+        doc.setFont("helvetica", "bold");
+        doc.text(`${term.termName} - ${term.status}`, 14, yPos);
+        yPos += 2;
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.text(`${term.attendedClasses}/${term.totalClasses} attended | Required: ${term.requiredClasses}`, 14, yPos + 4);
+        yPos += 6;
+
+        autoTable(doc, {
+          head: [["Date", "Day", "Status"]],
+          body: termRows,
+          startY: yPos,
+          theme: "striped",
+          headStyles: { fillColor: [99, 102, 241], fontSize: 9 },
+          bodyStyles: { fontSize: 8 },
+          didParseCell: (hookData: any) => {
+            if (hookData.section === "body" && hookData.column.index === 2) {
+              const val = hookData.cell.raw;
+              if (val === "Present") hookData.cell.styles.textColor = [124, 58, 237];
+              else if (val === "Leave") hookData.cell.styles.textColor = [202, 138, 4];
+              else if (val === "Absent") hookData.cell.styles.textColor = [239, 68, 68];
+              else if (val === "Warning") hookData.cell.styles.textColor = [234, 88, 12];
+            }
+          }
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 12;
+      });
+    } else {
+      const rows = Object.entries(data.student.attendance)
+        .sort((a, b) => parseDateSort(b[0]) - parseDateSort(a[0]))
+        .map(([dateStr, status]) => [dateStr, getDayName(dateStr), getStatusText(status)]);
+
+      autoTable(doc, {
+        head: [["Date", "Day", "Status"]],
+        body: rows,
+        startY: yPos,
+        theme: "grid",
+        headStyles: { fillColor: [99, 102, 241] },
+      });
+    }
+
+    doc.save(`${data.student.studentName.replace(/\s+/g, "_")}_PEP_Report.pdf`);
   };
 
   const handlePrint = () => {
