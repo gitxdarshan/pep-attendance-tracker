@@ -249,6 +249,10 @@ PEP ATTENDANCE RULES:
 - Even if a student attends all 5 days, only 3 will be recorded in the system
 - So the student needs to attend at least 3 days per week to get full weekly credit
 - If student attends only 1 or 2 days, only that many get counted (not rounded up to 3)
+- CRITICAL: Each week's 3-day limit is INDEPENDENT and resets every Monday. Previous week's attendance does NOT carry over to the next week.
+- Example: If student attended 2 days in Week 1, those 2 stay as 2 for Week 1. In Week 2, the count starts fresh from 0/3 again.
+- NEVER combine attendance from two different weeks. Week 1 count and Week 2 count are completely separate.
+- If student missed days last week, those are gone forever - they cannot be "made up" in this week. Each week is a fresh 0/3.
 - Statuses: P (Present), L (Leave), A (Absent), W (Warning - PEP rule violations like wearing wrong clothes, not following rules)
 - Terms: Festival Term (Oct-Dec, ended), Republic Term (Jan onwards, ONGOING with no fixed end date)
 - "Cleared" = 24+ classes attended, "Not Cleared" = term ended with <24 (only for Festival Term), "In Progress" = ongoing
