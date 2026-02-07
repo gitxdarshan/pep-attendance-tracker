@@ -5,9 +5,11 @@ export const termDataSchema = z.object({
   percentage: z.number(),
   attendedClasses: z.number(),
   totalClasses: z.number(),
+  classesConducted: z.number(),
   requiredClasses: z.number(),
   status: z.enum(["Cleared", "Not Cleared", "In Progress"]),
   remaining: z.number(),
+  classesLeft: z.number(),
   attendance: z.record(z.string(), z.string()),
 });
 

@@ -507,6 +507,26 @@ class AttendanceCache {
       allDateColumns.push(...term.dateColumns);
     });
 
+    const termConductedMap: Map<string, number> = new Map();
+    for (const term of terms) {
+      let conducted = 0;
+      for (const { col } of term.dateColumns) {
+        let hasData = false;
+        for (let rowIdx = headerRowIndex + 1; rowIdx < jsonData.length; rowIdx++) {
+          const row = jsonData[rowIdx];
+          if (!row) continue;
+          const val = row[col];
+          if (val !== null && val !== undefined && val !== '') {
+            hasData = true;
+            break;
+          }
+        }
+        if (hasData) conducted++;
+      }
+      termConductedMap.set(term.name, conducted);
+      console.log(`[Scraper] Term "${term.name}": ${conducted} classes conducted out of ${term.dateColumns.length} date columns`);
+    }
+
     const students: Student[] = [];
     const REQUIRED_CLASSES = 24;
     
@@ -571,15 +591,19 @@ class AttendanceCache {
         }
 
         const remaining = Math.max(0, REQUIRED_CLASSES - attended);
+        const classesConducted = termConductedMap.get(term.name) || 0;
+        const classesLeft = Math.max(0, total - classesConducted);
 
         studentTerms.push({
           termName: term.name,
           percentage: Math.round(percentage * 100) / 100,
           attendedClasses: attended,
           totalClasses: total,
+          classesConducted,
           requiredClasses: REQUIRED_CLASSES,
           status,
           remaining,
+          classesLeft,
           attendance: termAttendance
         });
       }
