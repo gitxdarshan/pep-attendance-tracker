@@ -156,6 +156,7 @@ export async function registerRoutes(
     let termContext = "";
     if (student.terms && student.terms.length > 0) {
       termContext = student.terms.map(t => {
+        const isRepublic = t.termName.toUpperCase().includes('REPUBLIC');
         const dayPatterns: Record<string, number> = {};
         for (const [dateStr, status] of Object.entries(t.attendance)) {
           const parts = dateStr.split('/');
@@ -169,14 +170,18 @@ export async function registerRoutes(
         }
         const absentDays = Object.entries(dayPatterns).sort((a, b) => b[1] - a[1]).map(([day, count]) => `${day}(${count})`).join(', ');
 
-        return `Term: ${t.termName}
+        const termInfo = `Term: ${t.termName}
   Status: ${t.status}
-  Attended: ${t.attendedClasses}/${t.classesConducted} classes conducted (${t.totalClasses} total planned)
+  Attended: ${t.attendedClasses}/${t.classesConducted} classes conducted so far
   Required: ${t.requiredClasses} classes to clear
   Still needed: ${t.remaining} more classes
-  Classes left in term: ${t.classesLeft}
   Percentage: ${t.percentage}%
   Absent/Leave patterns by day: ${absentDays || 'None'}`;
+
+        if (isRepublic) {
+          return termInfo + `\n  NOTE: Republic Term is ONGOING. End date is NOT fixed. Sir extend the spreadsheet as term continues. Do NOT tell student the term has ended or will end soon.`;
+        }
+        return termInfo + `\n  Classes left in term: ${t.classesLeft}`;
       }).join('\n\n');
     }
 
@@ -186,12 +191,15 @@ export async function registerRoutes(
 
 RULES:
 - PEP requires 24 out of 30 classes per term to be "Cleared"
-- Republic Term started 5 Jan 2026, term end date is NOT yet fixed
+- Republic Term started 5 Jan 2026, term end date is NOT fixed - sir extend the spreadsheet, so it can go beyond 30 classes
 - Schedule: 5 PEP days per week (Mon-Fri), Saturday-Sunday holiday
 - Students MUST attend minimum 3 out of 5 days per week (compulsory), can attend up to all 5
 - Statuses: P (Present), L (Leave), A (Absent), W (Warning - PEP rule violations like wearing wrong clothes, not following rules)
-- Terms: Festival Term (Oct-Dec), Republic Term (Jan onwards, end date TBD)
-- "Cleared" = 24+ classes attended, "Not Cleared" = term ended with <24, "In Progress" = ongoing
+- Terms: Festival Term (Oct-Dec, ended), Republic Term (Jan onwards, ONGOING with no fixed end date)
+- "Cleared" = 24+ classes attended, "Not Cleared" = term ended with <24 (only for Festival Term), "In Progress" = ongoing
+- Republic Term is ALWAYS "In Progress" until student attends 24+ classes (it NEVER auto-ends)
+- NEVER say Republic Term has ended or will end - the end date is unknown
+- When predicting, assume Republic Term will continue and student will keep getting chances to attend
 
 STUDENT DATA:
 Name: ${student.studentName}
