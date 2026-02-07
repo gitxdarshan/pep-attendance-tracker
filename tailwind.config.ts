@@ -6,9 +6,11 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        lg: ".5625rem", /* 9px */
-        md: ".375rem", /* 6px */
-        sm: ".1875rem", /* 3px */
+        lg: "1rem",    /* 16px */
+        md: ".75rem",  /* 12px */
+        sm: ".5rem",   /* 8px */
+        xl: "1.25rem", /* 20px */
+        "2xl": "1.5rem", /* 24px */
       },
       colors: {
         // Flat / base colors (regular buttons)
@@ -83,9 +85,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["var(--font-sans)"],
+        sans: ["'SF Pro Display'", "'SF Pro'", "'Inter'", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)"],
-        mono: ["var(--font-mono)"],
+        mono: ["'SF Mono'", "Menlo", "monospace"],
       },
       keyframes: {
         "accordion-down": {
@@ -96,10 +98,30 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "slide-up": {
+          from: { opacity: "0", transform: "translateY(10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-down": {
+          from: { opacity: "0", transform: "translateY(-10px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 20px rgba(139, 92, 246, 0.2)" },
+          "50%": { boxShadow: "0 0 30px rgba(139, 92, 246, 0.4)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "slide-up": "slide-up 0.3s ease-out",
+        "slide-down": "slide-down 0.3s ease-out",
+        "fade-in": "fade-in 0.2s ease-out",
+        "glow-pulse": "glow-pulse 2s ease-in-out infinite",
       },
     },
   },

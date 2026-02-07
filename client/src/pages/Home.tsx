@@ -139,9 +139,9 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
 
   return (
     <Card className="overflow-hidden" data-testid="card-attendance-history">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5">
+      <CardHeader className="bg-gradient-to-r from-purple-500/10 to-transparent">
         <CardTitle className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
+          <div className="p-2 rounded-lg bg-purple-500/20">
             <History className="w-5 h-5 text-primary" />
           </div>
           <span>Term-wise Attendance History</span>
@@ -162,11 +162,11 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
             <div key={termIndex} className="border rounded-xl overflow-hidden" data-testid={`term-history-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
               <button
                 onClick={() => toggleTerm(term.termName)}
-                className="w-full flex items-center justify-between p-3 sm:p-4 hover-elevate transition-all duration-200 bg-muted/30"
+                className="w-full flex items-center justify-between p-3 sm:p-4 hover-elevate transition-all duration-200 glass"
                 data-testid={`button-term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}
               >
                 <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                  <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 shrink-0">
+                  <div className="p-1.5 sm:p-2 rounded-lg bg-purple-500/20 shrink-0">
                     <Award className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   </div>
                   <div className="text-left min-w-0">
@@ -189,7 +189,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
               </button>
 
               {expandedTerms.has(term.termName) && (
-                <div className="border-t p-2 sm:p-4 space-y-2 bg-background">
+                <div className="border-t p-2 sm:p-4 space-y-2 bg-transparent">
                   {monthlyData.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4">No attendance records for this term</p>
                   ) : (
@@ -278,9 +278,9 @@ function TermProgress({ terms }: { terms: TermData[] }) {
 
   return (
     <Card className="overflow-hidden" data-testid="card-term-progress">
-      <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5">
+      <CardHeader className="bg-gradient-to-r from-purple-500/10 to-transparent">
         <CardTitle className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
+          <div className="p-2 rounded-lg bg-purple-500/20">
             <Target className="w-5 h-5 text-primary" />
           </div>
           <span>Term-wise Attendance</span>
@@ -295,7 +295,7 @@ function TermProgress({ terms }: { terms: TermData[] }) {
           const progressPercent = Math.min((term.attendedClasses / term.requiredClasses) * 100, 100);
           
           return (
-            <div key={index} className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${styles.bg} p-3 sm:p-5 border`} data-testid={`term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
+            <div key={index} className={`relative glass rounded-xl bg-gradient-to-br ${styles.bg} p-3 sm:p-5 border`} data-testid={`term-${term.termName.replace(/\s+/g, '-').toLowerCase()}`}>
               <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-4 mb-4">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                   <div className="p-1.5 sm:p-2 rounded-lg bg-background/50 shrink-0">
@@ -319,7 +319,7 @@ function TermProgress({ terms }: { terms: TermData[] }) {
                   <span className="text-muted-foreground font-medium">Progress to requirement ({term.requiredClasses} classes)</span>
                   <span className="font-bold">{Math.round(progressPercent)}%</span>
                 </div>
-                <div className="h-3 rounded-full bg-background/50 overflow-hidden">
+                <div className="h-3 rounded-full bg-white/10 overflow-hidden">
                   <div 
                     className={`h-full rounded-full transition-all duration-500 ${styles.progress}`}
                     style={{ width: `${progressPercent}%` }}
@@ -462,12 +462,12 @@ function AttendanceCalendar({ attendance }: { attendance: Record<string, string>
   return (
     <Card className="overflow-hidden" data-testid="card-attendance-calendar">
       <CardHeader 
-        className="bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/5 cursor-pointer hover-elevate"
+        className="bg-gradient-to-r from-purple-500/10 to-transparent cursor-pointer hover-elevate"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
+            <div className="p-2 rounded-lg bg-purple-500/20">
               <CalendarDays className="w-5 h-5 text-primary" />
             </div>
             <span>Attendance Calendar</span>
@@ -922,18 +922,18 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-lg">
+      <header className="sticky top-0 z-50 glass-heavy border-b-0">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-4">
               <div className="relative">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-purple-600 to-purple-500 flex items-center justify-center shadow-lg shadow-primary/25">
                   <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-violet-500 border-2 border-background" />
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-purple-400 border-2 border-background" />
               </div>
               <div>
-                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                <h1 className="text-lg sm:text-xl font-bold text-white bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
                   PEP Attendance
                 </h1>
                 <p className="text-xs text-muted-foreground font-medium">UG 2025 Batch Lifestyle</p>
@@ -964,7 +964,7 @@ export default function Home() {
       <main className="container mx-auto px-4 py-4 sm:py-6">
         <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
           {cacheStatus && (
-            <div className={`flex items-center justify-between text-sm rounded-xl px-4 py-3 border transition-all ${cacheStatus.isDemoData ? 'bg-yellow-400/10 text-yellow-700 dark:text-yellow-300 border-yellow-400/20' : 'bg-muted/50 text-muted-foreground border-transparent'}`}>
+            <div className={`flex items-center justify-between text-sm rounded-2xl px-4 py-3 border transition-all ${cacheStatus.isDemoData ? 'glass text-yellow-300 border-yellow-400/20' : 'glass text-muted-foreground border-transparent'}`}>
               <span data-testid="text-cache-status" className="flex items-center gap-2">
                 {cacheStatus.isLoading ? (
                   <>
@@ -993,10 +993,10 @@ export default function Home() {
             </div>
           )}
 
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-purple-500/10 to-transparent">
               <CardTitle className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
+                <div className="p-2 rounded-lg bg-purple-500/20">
                   <Search className="w-5 h-5 text-primary" />
                 </div>
                 <span>Search Student</span>
@@ -1053,7 +1053,7 @@ export default function Home() {
             <Card>
               <CardContent className="py-16 flex flex-col items-center justify-center gap-4">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
                 </div>
@@ -1063,10 +1063,10 @@ export default function Home() {
           )}
 
           {searchResults && !selectedRollNo && searchResults.count === 0 && (
-            <Card className="border-destructive/50 bg-destructive/5">
+            <Card className="border-rose-500/30">
               <CardContent className="py-6">
                 <div className="flex items-center gap-3 text-destructive">
-                  <div className="p-2 rounded-lg bg-destructive/10">
+                  <div className="p-2 rounded-lg bg-rose-500/20">
                     <XCircle className="w-5 h-5" />
                   </div>
                   <span className="font-medium" data-testid="text-error">No students found matching "{activeSearch}"</span>
@@ -1079,7 +1079,7 @@ export default function Home() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-primary/10">
+                  <div className="p-2 rounded-lg bg-purple-500/20">
                     <Users className="w-5 h-5 text-primary" />
                   </div>
                   <span>Search Results</span>
@@ -1095,11 +1095,11 @@ export default function Home() {
                     <button
                       key={student.rollNo}
                       onClick={() => handleSelectStudent(student.rollNo)}
-                      className="w-full flex items-center justify-between p-4 hover-elevate transition-all text-left"
+                      className="w-full flex items-center justify-between p-4 hover-elevate transition-all duration-200 text-left"
                       data-testid={`button-student-${student.rollNo}`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center border border-purple-500/20">
                           <User className="w-6 h-6 text-primary" />
                         </div>
                         <div>
@@ -1127,8 +1127,8 @@ export default function Home() {
           {studentData && selectedRollNo && (
             <div className="space-y-4">
               {isSavedStudent && !activeSearch && (
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20" data-testid="welcome-back-banner">
-                  <div className="p-2 rounded-lg bg-primary/20">
+                <div className="flex items-center gap-3 p-4 rounded-xl glass border border-purple-500/20" data-testid="welcome-back-banner">
+                  <div className="p-2 rounded-lg bg-purple-500/20">
                     <Heart className="w-5 h-5 text-primary fill-primary" />
                   </div>
                   <div>
@@ -1150,12 +1150,12 @@ export default function Home() {
                 </Button>
               )}
               <Card className="overflow-hidden" id="student-report">
-                <div className="h-2 bg-gradient-to-r from-primary via-primary/80 to-primary/60 " />
+                <div className="h-2 bg-gradient-to-r from-purple-600 via-purple-500 to-purple-400 " />
                 <CardHeader className="pb-4 px-3 sm:px-6">
                   <div className="flex items-start justify-between gap-2 sm:gap-4">
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                       <div className="relative  shrink-0">
-                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center border border-purple-500/20">
                           <User className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                         </div>
                         <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-background flex items-center justify-center ${studentData.todayStatus === 'Present' ? 'bg-violet-500' : studentData.todayStatus === 'Leave' ? 'bg-yellow-400' : studentData.todayStatus === 'Absent' ? 'bg-rose-500' : studentData.todayStatus === 'Warning' ? 'bg-orange-500' : 'bg-muted'}`}>
@@ -1238,10 +1238,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent className="space-y-4 sm:space-y-6 pb-4 sm:pb-6 px-3 sm:px-6">
                   <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-3 sm:p-5 border">
-                      <div className="absolute top-3 right-3 opacity-5">
-                        <Calendar className="w-16 h-16" />
-                      </div>
+                    <div className="relative rounded-xl glass p-3 sm:p-5 border">
                       <p className="text-sm text-muted-foreground font-medium mb-2">Today ({studentData.todayDate})</p>
                       <div className="flex items-center gap-3">
                         {getStatusIcon(studentData.todayStatus)}
@@ -1252,10 +1249,7 @@ export default function Home() {
                       </p>
                     </div>
 
-                    <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/50 to-muted/30 p-3 sm:p-5 border">
-                      <div className="absolute top-3 right-3 opacity-5">
-                        <TrendingUp className="w-16 h-16" />
-                      </div>
+                    <div className="relative rounded-xl glass p-3 sm:p-5 border">
                       <p className="text-sm text-muted-foreground font-medium mb-2">Weekly Progress</p>
                       <div className="flex items-center gap-3">
                         {studentData.weeklyData.status === "Completed" ? (
@@ -1285,7 +1279,7 @@ export default function Home() {
                       {studentData.weeklyBreakdown.map((day, i) => (
                         <div
                           key={i}
-                          className="text-center p-1.5 sm:p-3 rounded-xl bg-muted/30 border hover:border-primary/30 transition-colors"
+                          className="text-center p-1.5 sm:p-3 rounded-xl glass hover:border-primary/30 transition-colors"
                           data-testid={`day-${day.day.toLowerCase()}`}
                         >
                           <p className="text-[10px] sm:text-xs font-bold text-muted-foreground">{day.day}</p>
@@ -1309,9 +1303,9 @@ export default function Home() {
           )}
 
           {!activeSearch && !isLoading && (
-            <Card className="border-dashed border-2">
+            <Card className="glass border-dashed border">
               <CardContent className="py-16 flex flex-col items-center justify-center gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center">
                   <Search className="w-10 h-10 text-muted-foreground/30" />
                 </div>
                 <div className="text-center">

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
+/* LIGHT MODE - Glass-style with lighter tones */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
@@ -14,25 +14,25 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
 
-  --background: 0 0% 100%;
+  --background: 260 20% 97%;
 
-  --foreground: 242 30% 25%;
+  --foreground: 260 30% 20%;
 
-  --border: 242 20% 88%;
+  --border: 260 20% 88%;
 
-  --card: 0 0% 100%;
+  --card: 260 15% 98%;
 
-  --card-foreground: 242 30% 25%;
+  --card-foreground: 260 30% 20%;
 
-  --card-border: 242 20% 88%;
+  --card-border: 260 20% 88%;
 
-  --sidebar: 242 25% 97%;
+  --sidebar: 260 20% 95%;
 
-  --sidebar-foreground: 242 30% 25%;
+  --sidebar-foreground: 260 30% 20%;
 
-  --sidebar-border: 242 20% 88%;
+  --sidebar-border: 260 20% 88%;
 
-  --sidebar-primary: 246 100% 65%;
+  --sidebar-primary: 265 85% 60%;
 
   --sidebar-primary-foreground: 0 0% 100%;
 
@@ -40,25 +40,25 @@
 
   --sidebar-accent-foreground: 0 0% 100%;
 
-  --sidebar-ring: 246 100% 65%;
+  --sidebar-ring: 265 85% 60%;
 
-  --popover: 0 0% 100%;
+  --popover: 260 15% 98%;
 
-  --popover-foreground: 242 30% 25%;
+  --popover-foreground: 260 30% 20%;
 
-  --popover-border: 242 20% 88%;
+  --popover-border: 260 20% 88%;
 
-  --primary: 246 100% 65%;
+  --primary: 265 85% 60%;
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 242 25% 95%;
+  --secondary: 260 20% 93%;
 
-  --secondary-foreground: 242 30% 25%;
+  --secondary-foreground: 260 30% 20%;
 
-  --muted: 242 20% 95%;
+  --muted: 260 15% 93%;
 
-  --muted-foreground: 242 15% 45%;
+  --muted-foreground: 260 10% 45%;
 
   --accent: 202 100% 50%;
 
@@ -68,17 +68,23 @@
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 242 20% 88%;
-  --ring: 246 100% 65%;
-  --chart-1: 246 100% 65%;
+  --input: 260 20% 88%;
+  --ring: 265 85% 60%;
+  --chart-1: 265 85% 60%;
   --chart-2: 202 100% 50%;
   --chart-3: 64 88% 63%;
-  --chart-4: 242 30% 33%;
+  --chart-4: 260 30% 33%;
   --chart-5: 202 80% 40%;
 
-  --font-sans: 'Inter', sans-serif;
+  --glass-bg: rgba(0, 0, 0, 0.04);
+  --glass-bg-heavy: rgba(0, 0, 0, 0.07);
+  --glass-border: rgba(0, 0, 0, 0.08);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --glass-glow: 0 0 20px rgba(139, 92, 246, 0.08);
+
+  --font-sans: 'SF Pro Display', 'SF Pro', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
+  --font-mono: 'SF Mono', Menlo, monospace;
   --radius: .5rem; /* 8px */
   --shadow-2xs: 0px 1px 2px 0px hsl(222 47% 11% / 0.04);
   --shadow-xs: 0px 1px 3px 0px hsl(222 47% 11% / 0.06);
@@ -122,6 +128,7 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
+/* DARK MODE - Full glassmorphism */
 .dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
@@ -132,25 +139,25 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  --background: 242 30% 20%;
+  --background: 260 20% 9%;
 
-  --foreground: 0 0% 95%;
+  --foreground: 0 0% 97%;
 
-  --border: 242 25% 28%;
+  --border: 260 15% 18%;
 
-  --card: 242 30% 24%;
+  --card: 260 18% 13%;
 
-  --card-foreground: 0 0% 95%;
+  --card-foreground: 0 0% 97%;
 
-  --card-border: 242 25% 28%;
+  --card-border: 260 15% 18%;
 
-  --sidebar: 242 30% 18%;
+  --sidebar: 260 20% 7%;
 
-  --sidebar-foreground: 0 0% 95%;
+  --sidebar-foreground: 0 0% 97%;
 
-  --sidebar-border: 242 25% 28%;
+  --sidebar-border: 260 15% 18%;
 
-  --sidebar-primary: 246 100% 70%;
+  --sidebar-primary: 265 85% 65%;
 
   --sidebar-primary-foreground: 0 0% 100%;
 
@@ -158,25 +165,25 @@
 
   --sidebar-accent-foreground: 0 0% 100%;
 
-  --sidebar-ring: 246 100% 70%;
+  --sidebar-ring: 265 85% 65%;
 
-  --popover: 242 30% 24%;
+  --popover: 260 18% 13%;
 
-  --popover-foreground: 0 0% 95%;
+  --popover-foreground: 0 0% 97%;
 
-  --popover-border: 242 25% 28%;
+  --popover-border: 260 15% 18%;
 
-  --primary: 246 100% 70%;
+  --primary: 265 85% 65%;
 
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 242 25% 28%;
+  --secondary: 260 15% 16%;
 
   --secondary-foreground: 0 0% 95%;
 
-  --muted: 242 25% 28%;
+  --muted: 260 15% 14%;
 
-  --muted-foreground: 242 15% 65%;
+  --muted-foreground: 260 10% 55%;
 
   --accent: 202 100% 55%;
 
@@ -186,13 +193,19 @@
 
   --destructive-foreground: 0 0% 100%;
 
-  --input: 242 25% 32%;
-  --ring: 246 100% 70%;
-  --chart-1: 246 100% 70%;
+  --input: 260 15% 20%;
+  --ring: 265 85% 65%;
+  --chart-1: 265 85% 65%;
   --chart-2: 202 100% 55%;
   --chart-3: 64 88% 63%;
-  --chart-4: 242 30% 45%;
+  --chart-4: 260 30% 45%;
   --chart-5: 202 80% 45%;
+
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-heavy: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --glass-glow: 0 0 20px rgba(139, 92, 246, 0.15);
 
   --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.2);
   --shadow-xs: 0px 1px 3px 0px hsl(0 0% 0% / 0.25);
@@ -206,12 +219,22 @@
 }
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(260 25% 6%) 50%, hsl(280 20% 8%) 100%);
+    min-height: 100vh;
+  }
+
+  .dark body {
+    background: linear-gradient(135deg, hsl(260 20% 5%) 0%, hsl(260 25% 8%) 50%, hsl(280 20% 10%) 100%);
   }
 }
 
@@ -357,4 +380,43 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+}
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-heavy {
+  background: var(--glass-bg-heavy);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-glow);
+}
+
+.glass-input {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-button {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ios-press {
+  transition: transform 0.15s ease-in-out;
+}
+.ios-press:active {
+  transform: scale(0.97);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 60px rgba(139, 92, 246, 0.1);
 }

@@ -32,19 +32,19 @@ export default function Admin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-lg">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-50 glass-heavy border-b-0">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Link href="/">
-                <Button variant="ghost" size="icon" className="rounded-xl" data-testid="button-back">
+                <Button variant="ghost" size="icon" className="rounded-2xl" data-testid="button-back">
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
               </Link>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center shadow-lg shadow-yellow-400/25">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/25">
                     <AlertTriangle className="w-6 h-6 text-white" />
                   </div>
                 </div>
@@ -66,7 +66,7 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-6">
         <div className="max-w-5xl mx-auto space-y-6">
           {cacheStatus && (
-            <div className="flex items-center text-sm rounded-xl px-4 py-3 border bg-muted/50">
+            <div className="flex items-center text-sm glass rounded-2xl px-4 py-3">
               <span className="flex items-center gap-2">
                 {cacheStatus.isLoading ? (
                   <>
@@ -90,10 +90,10 @@ export default function Admin() {
             </div>
           )}
 
-          <Card className="overflow-hidden border-yellow-400/20 bg-gradient-to-r from-yellow-400/5 to-transparent">
+          <Card className="border-amber-500/20">
             <CardContent className="p-5">
               <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-yellow-400/10">
+                <div className="p-3 rounded-xl bg-amber-500/20">
                   <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                 </div>
                 <div>
@@ -109,7 +109,7 @@ export default function Admin() {
           {isLoading && (
             <Card>
               <CardContent className="py-16 flex flex-col items-center justify-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
                 <p className="text-muted-foreground font-medium">Loading pending students...</p>
@@ -118,10 +118,10 @@ export default function Admin() {
           )}
 
           {isError && (
-            <Card className="border-destructive/50 bg-destructive/5">
+            <Card className="border-rose-500/30">
               <CardContent className="py-6">
                 <div className="flex items-center gap-3 text-destructive">
-                  <div className="p-2 rounded-lg bg-destructive/10">
+                  <div className="p-2 rounded-lg bg-rose-500/20">
                     <XCircle className="w-5 h-5" />
                   </div>
                   <span className="font-medium">Failed to load pending students</span>
@@ -131,10 +131,10 @@ export default function Admin() {
           )}
 
           {pendingStudents && pendingStudents.length === 0 && (
-            <Card className="border-violet-500/20 bg-gradient-to-r from-violet-500/5 to-transparent overflow-hidden">
+            <Card className="border-purple-500/20">
               <CardContent className="py-16 flex flex-col items-center justify-center gap-4">
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/20 to-violet-500/5 flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center">
                     <CheckCircle2 className="w-10 h-10 text-violet-500" />
                   </div>
                 </div>
@@ -153,12 +153,12 @@ export default function Admin() {
           {pendingStudents && pendingStudents.length > 0 && (
             <div className="grid gap-3">
               {pendingStudents.map((student, index) => (
-                <Card key={student.rollNo} className="overflow-hidden hover:border-primary/30 transition-colors" data-testid={`card-student-${index}`}>
+                <Card key={student.rollNo} className="transition-all duration-200" data-testid={`card-student-${index}`}>
                   <CardContent className="p-4">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                       <div className="flex items-center gap-4 flex-1">
                         <div className="relative">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center border border-purple-500/20">
                             <GraduationCap className="w-6 h-6 text-primary" />
                           </div>
                           <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-yellow-400 border-2 border-background flex items-center justify-center">
@@ -196,7 +196,7 @@ export default function Admin() {
                           </p>
                         </div>
 
-                        <div className="flex gap-1.5 p-2 rounded-lg bg-muted/50">
+                        <div className="flex gap-1.5 p-2 rounded-lg glass">
                           {student.weeklyBreakdown.map((day, i) => (
                             <div key={i} className="text-center" title={`${day.day} - ${day.date}`}>
                               {getStatusBadge(day.status)}
