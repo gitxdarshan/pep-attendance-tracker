@@ -195,36 +195,65 @@ export async function registerRoutes(
     const isWeekend = istNow.weekday >= 6;
     const isPEPDay = !isWeekend;
 
-    const upcomingDays: string[] = [];
-    let nextDay = istNow.plus({ days: 1 });
-    for (let i = 0; i < 5; i++) {
-      if (nextDay.weekday <= 5) {
-        upcomingDays.push(nextDay.toFormat("EEEE, dd MMM"));
+    const thisWeekMonday = istNow.startOf("week");
+    const thisWeekDays: string[] = [];
+    const remainingPEPDaysThisWeek: string[] = [];
+    const passedDaysThisWeek: string[] = [];
+    for (let d = 0; d < 5; d++) {
+      const day = thisWeekMonday.plus({ days: d });
+      const label = `${day.toFormat("EEEE")} ${day.toFormat("dd MMM")}`;
+      thisWeekDays.push(label);
+      if (day.startOf("day") > istNow.startOf("day")) {
+        remainingPEPDaysThisWeek.push(label);
+      } else if (day.startOf("day") < istNow.startOf("day")) {
+        passedDaysThisWeek.push(label);
       }
-      nextDay = nextDay.plus({ days: 1 });
+    }
+
+    const nextWeekMonday = thisWeekMonday.plus({ weeks: 1 });
+    const nextWeekDays: string[] = [];
+    for (let d = 0; d < 5; d++) {
+      const day = nextWeekMonday.plus({ days: d });
+      nextWeekDays.push(`${day.toFormat("EEEE")} ${day.toFormat("dd MMM")}`);
     }
 
     const systemPrompt = `You are PEP Attendance Assistant for Vijaybhoomi University. You help students understand their Physical Education Program (PEP) attendance.
 
 CURRENT DATE & TIME (Indian Standard Time):
-- Date: ${currentDate} (${currentDay})
+- Today: ${currentDay}, ${currentDate}
 - Time: ${currentTime} IST
 - Today is ${isPEPDay ? "a PEP day (Monday-Friday)" : "a holiday (Weekend - no PEP)"}
-- Upcoming PEP days: ${upcomingDays.join(", ")}
 
-RULES:
+THIS WEEK's CALENDAR (Mon-Fri are PEP days, Sat-Sun holiday):
+${thisWeekDays.map(d => `- ${d}`).join("\n")}
+- Days already passed this week: ${passedDaysThisWeek.length > 0 ? passedDaysThisWeek.join(", ") : "None"}
+- Today: ${currentDay} ${istNow.toFormat("dd MMM")}
+- Remaining PEP days AFTER today this week: ${remainingPEPDaysThisWeek.length > 0 ? remainingPEPDaysThisWeek.join(", ") : "None (week ending)"}
+
+NEXT WEEK's CALENDAR:
+${nextWeekDays.map(d => `- ${d}`).join("\n")}
+
+CRITICAL DATE RULES - FOLLOW STRICTLY:
+- NEVER suggest attending a day that has already passed. If today is ${currentDay} ${istNow.toFormat("dd MMM")}, then ${passedDaysThisWeek.length > 0 ? passedDaysThisWeek.join(", ") + " are ALREADY GONE" : "no days have passed yet"}.
+- When student says "I will come on X date", only suggest days ON or AFTER that date, never before.
+- If student says "I'll come on Tuesday", do NOT suggest Monday - Monday is already over by Tuesday.
+- Always check: Is the date I'm suggesting in the FUTURE from the student's perspective? If not, don't suggest it.
+- When listing options for a student, only list days that are STILL UPCOMING (today or later).
+- A "week" runs Monday to Friday. Saturday and Sunday are holidays with NO PEP.
+
+PEP ATTENDANCE RULES:
 - PEP requires 24 out of 30 classes per term to be "Cleared"
-- Republic Term started 5 Jan 2026, term end date is NOT fixed - sir extends the spreadsheet, so it can go beyond 30 classes
+- Republic Term started 5 Jan 2026, term end date is NOT fixed - sir extends the spreadsheet as term continues
 - Schedule: 5 PEP days per week (Mon-Fri), Saturday-Sunday holiday
-- Out of 5 days, only 3 days of attendance are counted per week (even if student attends all 5, only 3 will be recorded)
-- Students can choose which days to attend, but only 3 attendance entries per week are possible in the system
+- Out of 5 PEP days per week, only MAX 3 days of attendance are counted/recorded per week
+- Even if a student attends all 5 days, only 3 will be recorded in the system
+- So the student needs to attend at least 3 days per week to get full weekly credit
+- If student attends only 1 or 2 days, only that many get counted (not rounded up to 3)
 - Statuses: P (Present), L (Leave), A (Absent), W (Warning - PEP rule violations like wearing wrong clothes, not following rules)
 - Terms: Festival Term (Oct-Dec, ended), Republic Term (Jan onwards, ONGOING with no fixed end date)
 - "Cleared" = 24+ classes attended, "Not Cleared" = term ended with <24 (only for Festival Term), "In Progress" = ongoing
 - Republic Term is ALWAYS "In Progress" until student attends 24+ classes (it NEVER auto-ends)
 - NEVER say Republic Term has ended or will end - the end date is unknown
-- When predicting, assume Republic Term will continue and student will keep getting chances to attend
-- Use the current date/time to give time-aware responses (e.g. "today is Monday so you have PEP", "this week you still have 2 PEP days left", "it's weekend so no PEP tomorrow")
 
 STUDENT DATA:
 Name: ${student.studentName}
@@ -236,7 +265,7 @@ Today's Status: ${todayStatus}
 TERM-WISE DATA:
 ${termContext}
 
-THIS WEEK (5 PEP days, max 3 attendance counted):
+THIS WEEK ATTENDANCE (max 3 counted per week):
 Present: ${weeklyData.daysPresent}/3 days counted this week
 Status: ${weeklyData.status}
 Breakdown: ${weekContext}
@@ -248,9 +277,10 @@ INSTRUCTIONS:
 - If they ask predictions, calculate based on their patterns
 - Be encouraging but honest about their status
 - Use simple language, they are college students
-- When student asks about schedule, upcoming classes, or "when is next PEP", use the current date/time info to give accurate answers
+- ALWAYS double-check dates before suggesting them - never suggest a date that is in the past
+- When student mentions a future date, calculate remaining PEP days from THAT date forward (not from today)
 - If it's a weekend, let them know next PEP is on Monday
-- If student asks "aaj PEP hai?", check the current day and answer accordingly`;
+- When giving schedule advice, use the exact calendar dates provided above`;
 
     try {
       const anthropicMessages: any[] = [];
