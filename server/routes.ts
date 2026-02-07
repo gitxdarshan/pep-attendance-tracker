@@ -120,7 +120,7 @@ export async function registerRoutes(
 
   const kimi = new OpenAI({
     apiKey: process.env.MOONSHOT_API_KEY,
-    baseURL: "https://api.moonshot.ai/v1",
+    baseURL: "https://api.moonshot.cn/v1",
   });
 
   const chatRateLimit = new Map<string, number>();
@@ -231,7 +231,7 @@ INSTRUCTIONS:
       }
 
       const response = await kimi.chat.completions.create({
-        model: "moonshot-v1-8k",
+        model: "kimi-k2",
         messages,
         temperature: 0.7,
         max_tokens: 500,
