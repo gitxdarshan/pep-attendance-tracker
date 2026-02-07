@@ -175,7 +175,7 @@ function TermwiseAttendanceHistory({ terms }: { terms: TermData[] }) {
                       {getTermStatusBadge(term.status)}
                     </div>
                     <div className="flex flex-wrap gap-3 text-xs mt-1">
-                      <span className="font-medium">{term.attendedClasses}/{term.totalClasses} classes</span>
+                      <span className="font-medium">{term.attendedClasses}/{term.classesConducted != null ? term.classesConducted : term.totalClasses} classes</span>
                       <span className="text-violet-600 dark:text-violet-400 font-medium">{presentCount} P</span>
                       <span className="text-yellow-600 dark:text-yellow-400 font-medium">{leaveCount} L</span>
                       <span className="text-rose-600 dark:text-rose-400 font-medium">{absentCount} A</span>
@@ -304,7 +304,10 @@ function TermProgress({ terms }: { terms: TermData[] }) {
                   <div>
                     <h4 className="font-semibold text-lg">{term.termName}</h4>
                     <p className="text-sm text-muted-foreground">
-                      {term.attendedClasses} / {term.totalClasses} classes attended
+                      {term.attendedClasses} / {term.classesConducted != null ? term.classesConducted : term.totalClasses} classes attended
+                      {term.status === "In Progress" && term.classesLeft > 0 && (
+                        <span className="ml-1">({term.classesLeft} classes left in term)</span>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -328,7 +331,14 @@ function TermProgress({ terms }: { terms: TermData[] }) {
                 {term.status === "In Progress" && term.remaining > 0 && (
                   <p className="text-sm font-medium text-amber-600 dark:text-amber-400 mt-2 flex items-center gap-1.5">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    {term.remaining} more classes needed to clear this term
+                    {term.remaining} more classes needed
+                    {term.classesLeft > 0 && ` (${term.classesLeft} classes remaining in term)`}
+                    {term.classesLeft > 0 && term.remaining <= term.classesLeft && (
+                      <span className="text-emerald-600 dark:text-emerald-400 ml-1">- Achievable</span>
+                    )}
+                    {term.classesLeft > 0 && term.remaining > term.classesLeft && (
+                      <span className="text-rose-600 dark:text-rose-400 ml-1">- At risk</span>
+                    )}
                   </p>
                 )}
                 {term.status === "Cleared" && (

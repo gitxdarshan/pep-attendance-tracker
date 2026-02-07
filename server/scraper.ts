@@ -515,6 +515,9 @@ class AttendanceCache {
         for (let rowIdx = headerRowIndex + 1; rowIdx < jsonData.length; rowIdx++) {
           const row = jsonData[rowIdx];
           if (!row) continue;
+          const studentName = String(row[nameCol] || '').trim();
+          const studentRoll = String(row[rollCol] || '').trim();
+          if (!studentName || studentName.length < 2 || !studentRoll || studentRoll.length < 3) continue;
           const val = row[col];
           if (val !== null && val !== undefined && val !== '') {
             hasData = true;
@@ -592,7 +595,8 @@ class AttendanceCache {
 
         const remaining = Math.max(0, REQUIRED_CLASSES - attended);
         const classesConducted = termConductedMap.get(term.name) || 0;
-        const classesLeft = Math.max(0, total - classesConducted);
+        const PLANNED_TOTAL = 30;
+        const classesLeft = Math.max(0, PLANNED_TOTAL - classesConducted);
 
         studentTerms.push({
           termName: term.name,
