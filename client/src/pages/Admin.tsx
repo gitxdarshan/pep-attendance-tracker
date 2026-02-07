@@ -99,7 +99,7 @@ export default function Admin() {
                 <div>
                   <h2 className="text-lg font-bold">Students Below Requirement</h2>
                   <p className="text-sm text-muted-foreground">
-                    Students who haven't completed 3 present days this week (Mon-Fri)
+                    Students who haven't attended minimum 3 out of 5 PEP days this week (Mon-Fri)
                   </p>
                 </div>
               </div>
