@@ -568,16 +568,15 @@ class AttendanceCache {
           }
         }
 
+        const isRepublicTerm = term.name.toUpperCase().includes('REPUBLIC');
+
         let termEnded = false;
-        if (term.dateColumns.length > 0) {
+        if (!isRepublicTerm && term.dateColumns.length > 0) {
           const lastDateStr = term.dateColumns[term.dateColumns.length - 1].date;
           const parts = lastDateStr.split('/');
           if (parts.length === 3) {
             const lastDate = new Date(parseInt(parts[2]), parseInt(parts[0]) - 1, parseInt(parts[1]));
             const daysSinceLastClass = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-            // Term is only ended if:
-            // 1. It has reached 30 classes AND last class was more than 7 days ago, OR
-            // 2. Last class was more than 30 days ago (term definitely over)
             termEnded = (total >= 30 && daysSinceLastClass > 7) || daysSinceLastClass > 30;
           }
         }
@@ -587,6 +586,8 @@ class AttendanceCache {
           status = "Cleared";
         } else if (attended >= REQUIRED_CLASSES) {
           status = "Cleared";
+        } else if (criteriaValue.includes('not') && criteriaValue.includes('cleared')) {
+          status = "Not Cleared";
         } else if (termEnded) {
           status = "Not Cleared";
         } else {
@@ -596,7 +597,9 @@ class AttendanceCache {
         const remaining = Math.max(0, REQUIRED_CLASSES - attended);
         const classesConducted = termConductedMap.get(term.name) || 0;
         const PLANNED_TOTAL = 30;
-        const classesLeft = Math.max(0, PLANNED_TOTAL - classesConducted);
+        const classesLeft = isRepublicTerm
+          ? Math.max(0, PLANNED_TOTAL - attended)
+          : Math.max(0, PLANNED_TOTAL - classesConducted);
 
         studentTerms.push({
           termName: term.name,
