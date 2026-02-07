@@ -2,7 +2,6 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { attendanceCache } from "./scraper";
 import type { StudentResponse, PendingStudent } from "@shared/schema";
-import { getVapidPublicKey, addSubscription, removeSubscription, removeAllSubscriptions, getSubscriptionCount } from "./push";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -116,40 +115,6 @@ export async function registerRoutes(
   app.get("/api/cleanup/stats", (req, res) => {
     const stats = attendanceCache.getCleanupStats();
     res.json(stats);
-  });
-
-  app.get("/api/push/vapid-key", (req, res) => {
-    const key = getVapidPublicKey();
-    if (!key) {
-      return res.status(500).json({ error: "Push notifications not configured" });
-    }
-    res.json({ publicKey: key });
-  });
-
-  app.post("/api/push/subscribe", (req, res) => {
-    const { rollNo, subscription } = req.body;
-    if (!rollNo || !subscription || !subscription.endpoint) {
-      return res.status(400).json({ error: "rollNo and subscription required" });
-    }
-    addSubscription(rollNo, subscription);
-    res.json({ success: true, message: "Subscribed to notifications" });
-  });
-
-  app.post("/api/push/unsubscribe", (req, res) => {
-    const { rollNo, endpoint } = req.body;
-    if (!rollNo) {
-      return res.status(400).json({ error: "rollNo required" });
-    }
-    if (endpoint) {
-      removeSubscription(rollNo, endpoint);
-    } else {
-      removeAllSubscriptions(rollNo);
-    }
-    res.json({ success: true, message: "Unsubscribed from notifications" });
-  });
-
-  app.get("/api/push/stats", (req, res) => {
-    res.json({ totalSubscriptions: getSubscriptionCount() });
   });
 
   return httpServer;

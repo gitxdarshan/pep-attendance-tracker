@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pep-tracker-v2';
+const CACHE_NAME = 'pep-tracker-v1';
 const STATIC_ASSETS = [
   '/',
   '/favicon.png',
@@ -25,53 +25,6 @@ self.addEventListener('activate', (event) => {
     })
   );
   self.clients.claim();
-});
-
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-
-  try {
-    const data = event.data.json();
-    const options = {
-      body: data.body || 'New attendance update',
-      icon: data.icon || '/favicon.png',
-      badge: data.badge || '/favicon.png',
-      vibrate: [100, 50, 100],
-      data: data.data || {},
-      actions: [
-        { action: 'open', title: 'View Attendance' },
-        { action: 'close', title: 'Dismiss' }
-      ],
-      tag: 'pep-attendance-' + (data.data?.date || Date.now()),
-      renotify: true,
-      requireInteraction: false
-    };
-
-    event.waitUntil(
-      self.registration.showNotification(data.title || 'PEP Attendance', options)
-    );
-  } catch (e) {
-    console.error('[SW] Push parse error:', e);
-  }
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  if (event.action === 'close') return;
-
-  const urlToOpen = event.notification.data?.url || '/';
-
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      return self.clients.openWindow(urlToOpen);
-    })
-  );
 });
 
 self.addEventListener('fetch', (event) => {

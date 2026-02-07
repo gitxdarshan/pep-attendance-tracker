@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, FileText, Download, ChevronRight, ChevronLeft, Award, Target, Heart, HeartOff, LogOut, Bell, BellOff } from "lucide-react";
+import { Search, User, Calendar, CheckCircle2, XCircle, Clock, AlertCircle, Loader2, RefreshCw, History, ChevronDown, ChevronUp, GraduationCap, TrendingUp, CalendarDays, Users, FileSpreadsheet, FileText, Download, ChevronRight, ChevronLeft, Award, Target, Heart, HeartOff, LogOut } from "lucide-react";
 import type { StudentResponse, CacheStatus, Student, TermData } from "@shared/schema";
 import { Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -577,81 +577,6 @@ function clearSavedStudent() {
   }
 }
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-async function subscribeToPush(rollNo: string): Promise<boolean> {
-  try {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.log('[Push] Not supported on this browser');
-      return false;
-    }
-
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.log('[Push] Permission denied');
-      return false;
-    }
-
-    const registration = await navigator.serviceWorker.ready;
-
-    let subscription = await registration.pushManager.getSubscription();
-
-    if (!subscription) {
-      const keyResponse = await fetch('/api/push/vapid-key');
-      if (!keyResponse.ok) return false;
-      const { publicKey } = await keyResponse.json();
-
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
-    }
-
-    const response = await fetch('/api/push/subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rollNo, subscription: subscription.toJSON() }),
-    });
-
-    return response.ok;
-  } catch (error) {
-    console.error('[Push] Subscribe error:', error);
-    return false;
-  }
-}
-
-async function unsubscribeFromPush(rollNo: string): Promise<boolean> {
-  try {
-    if (!('serviceWorker' in navigator)) return false;
-
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
-
-    if (subscription) {
-      await fetch('/api/push/unsubscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rollNo, endpoint: subscription.endpoint }),
-      });
-      await subscription.unsubscribe();
-    }
-
-    return true;
-  } catch (error) {
-    console.error('[Push] Unsubscribe error:', error);
-    return false;
-  }
-}
-
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchType, setSearchType] = useState<"roll" | "name">("roll");
@@ -659,28 +584,6 @@ export default function Home() {
   const [selectedRollNo, setSelectedRollNo] = useState<string | null>(null);
   const [isRemembered, setIsRemembered] = useState(false);
   const [isSavedStudent, setIsSavedStudent] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [pushSupported, setPushSupported] = useState(true);
-  const [isStandalone, setIsStandalone] = useState(false);
-
-  useEffect(() => {
-    const standalone = window.matchMedia('(display-mode: standalone)').matches
-      || (navigator as any).standalone === true;
-    setIsStandalone(standalone);
-
-    const supported = 'serviceWorker' in navigator
-      && 'PushManager' in window
-      && 'Notification' in window;
-    setPushSupported(supported);
-
-    if (supported && Notification.permission === 'granted') {
-      navigator.serviceWorker?.ready.then(reg => {
-        reg.pushManager.getSubscription().then(sub => {
-          setNotificationsEnabled(!!sub);
-        });
-      }).catch(() => {});
-    }
-  }, [isRemembered]);
 
   const { data: cacheStatus } = useQuery<CacheStatus>({
     queryKey: ["/api/status"],
@@ -733,9 +636,6 @@ export default function Home() {
       setSelectedRollNo(saved.rollNo);
       setIsRemembered(true);
       setIsSavedStudent(true);
-      if ('Notification' in window && Notification.permission === 'granted') {
-        subscribeToPush(saved.rollNo).then(ok => setNotificationsEnabled(ok));
-      }
     }
   }, []);
 
@@ -752,29 +652,21 @@ export default function Home() {
     }
   }, [selectedRollNo]);
 
-  const handleRememberToggle = async () => {
+  const handleRememberToggle = () => {
     if (!studentData) return;
     
     if (isRemembered) {
       clearSavedStudent();
       setIsRemembered(false);
       setIsSavedStudent(false);
-      setNotificationsEnabled(false);
-      await unsubscribeFromPush(studentData.student.rollNo);
     } else {
       saveStudent(studentData.student.rollNo, studentData.student.studentName);
       setIsRemembered(true);
       setIsSavedStudent(true);
-      const subscribed = await subscribeToPush(studentData.student.rollNo);
-      setNotificationsEnabled(subscribed);
     }
   };
 
-  const handleLogout = async () => {
-    const saved = getSavedStudent();
-    if (saved) {
-      await unsubscribeFromPush(saved.rollNo);
-    }
+  const handleLogout = () => {
     clearSavedStudent();
     setIsRemembered(false);
     setIsSavedStudent(false);
@@ -1239,26 +1131,10 @@ export default function Home() {
                   <div className="p-2 rounded-lg bg-primary/20">
                     <Heart className="w-5 h-5 text-primary fill-primary" />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div>
                     <p className="font-semibold text-primary">Welcome back, {studentData.student.studentName.split(' ')[0]}!</p>
                     <p className="text-sm text-muted-foreground">Your attendance is auto-loaded</p>
                   </div>
-                  {notificationsEnabled ? (
-                    <Badge variant="outline" className="gap-1 text-xs shrink-0 border-green-500/30 text-green-600 dark:text-green-400">
-                      <Bell className="w-3 h-3" />
-                      <span className="hidden sm:inline">Alerts On</span>
-                    </Badge>
-                  ) : !pushSupported && !isStandalone ? (
-                    <Badge variant="outline" className="gap-1 text-xs shrink-0 text-amber-600 dark:text-amber-400 border-amber-500/30 cursor-help" title="Install this app to your home screen to enable notifications">
-                      <BellOff className="w-3 h-3" />
-                      <span className="hidden sm:inline">Install App</span>
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="gap-1 text-xs shrink-0 text-muted-foreground">
-                      <BellOff className="w-3 h-3" />
-                      <span className="hidden sm:inline">No Alerts</span>
-                    </Badge>
-                  )}
                 </div>
               )}
               {searchResults && searchResults.count > 1 && (
