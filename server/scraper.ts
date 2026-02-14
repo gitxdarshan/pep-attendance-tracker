@@ -124,26 +124,16 @@ class AttendanceCache {
       if (!fs.existsSync(DOWNLOAD_PATH)) return { filesDeleted: 0, bytesFreed: 0 };
 
       const files = fs.readdirSync(DOWNLOAD_PATH);
-      const now = Date.now();
 
       for (const file of files) {
-        if (!file.endsWith('.xlsx') && !file.endsWith('.xls')) continue;
-        
         const filePath = path.join(DOWNLOAD_PATH, file);
-        
-        if (filePath === FILE_PATH && this.cache.data !== null) {
-          continue;
-        }
-        
         try {
           const stats = fs.statSync(filePath);
-          const fileAge = now - stats.mtimeMs;
-
-          if (fileAge > MAX_FILE_AGE_MS) {
+          if (stats.isFile()) {
             bytesFreed += stats.size;
             fs.unlinkSync(filePath);
             filesDeleted++;
-            console.log(`[Scraper] Deleted old Excel file: ${file} (age: ${Math.round(fileAge / 60000)} mins)`);
+            console.log(`[Scraper] Deleted file during cleanup: ${file} (${(stats.size / 1024).toFixed(2)} KB)`);
           }
         } catch (err) {
           console.error(`[Scraper] Error checking file ${file}: ${err}`);
@@ -209,18 +199,28 @@ class AttendanceCache {
     return size;
   }
 
-  private deleteOldDataFile(): boolean {
+  private deleteAllDataFiles(): number {
+    let bytesFreed = 0;
     try {
-      if (fs.existsSync(FILE_PATH)) {
-        const stats = fs.statSync(FILE_PATH);
-        fs.unlinkSync(FILE_PATH);
-        console.log(`[Scraper] Deleted old data file before refresh (${(stats.size / 1024).toFixed(2)} KB)`);
-        return true;
+      if (!fs.existsSync(DOWNLOAD_PATH)) return 0;
+      const files = fs.readdirSync(DOWNLOAD_PATH);
+      for (const file of files) {
+        const filePath = path.join(DOWNLOAD_PATH, file);
+        try {
+          const stats = fs.statSync(filePath);
+          if (stats.isFile()) {
+            bytesFreed += stats.size;
+            fs.unlinkSync(filePath);
+          }
+        } catch {}
+      }
+      if (bytesFreed > 0) {
+        console.log(`[Scraper] Cleaned up ${(bytesFreed / 1024).toFixed(2)} KB from download folder`);
       }
     } catch (err) {
-      console.error(`[Scraper] Error deleting old data file: ${err}`);
+      console.error(`[Scraper] Error cleaning download folder: ${err}`);
     }
-    return false;
+    return bytesFreed;
   }
 
   private ensureDownloadFolder() {
@@ -348,8 +348,6 @@ class AttendanceCache {
     try {
       this.ensureDownloadFolder();
 
-      this.deleteOldDataFile();
-
       const buffer = await this.downloadWithPuppeteer();
 
       fs.writeFileSync(FILE_PATH, buffer);
@@ -357,6 +355,8 @@ class AttendanceCache {
 
       console.log("[Scraper] Parsing Excel file...");
       const data = this.parseExcelFile(FILE_PATH);
+
+      this.deleteAllDataFiles();
       
       if (data.students.length === 0) {
         throw new Error("No students found in Excel file");
