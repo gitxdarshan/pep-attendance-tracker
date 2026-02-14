@@ -24,6 +24,8 @@ export default function Admin() {
         return <Badge className="bg-yellow-400/20 text-yellow-700 dark:text-yellow-300 border-yellow-400/30 text-xs font-semibold">L</Badge>;
       case "Absent":
         return <Badge className="bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 text-xs font-semibold">A</Badge>;
+      case "Warning":
+        return <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/30 text-xs font-semibold">W</Badge>;
       case "Future":
         return <Badge variant="secondary" className="text-xs opacity-50">-</Badge>;
       default:

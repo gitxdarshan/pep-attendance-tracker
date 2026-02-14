@@ -35,9 +35,11 @@ export async function registerRoutes(
     const todayStatus = attendanceCache.getTodayStatus(student);
     const { weeklyData, weeklyBreakdown } = attendanceCache.getWeeklyData(student);
 
+    const istToday = DateTime.now().setZone("Asia/Kolkata");
+
     const response: StudentResponse = {
       student,
-      todayDate: new Date().toISOString().split('T')[0],
+      todayDate: istToday.toFormat("yyyy-MM-dd"),
       todayStatus: todayStatus as "Not marked" | "Present" | "Leave" | "Absent" | "Warning",
       isTodayMarked: todayStatus !== "Not marked",
       weeklyData,
